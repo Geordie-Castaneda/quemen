@@ -23,6 +23,7 @@
         # 'security/ir.model.access.csv',
         # 'views/mrp_production_views.xml',
         'data/ir_sequence_data.xml',
+        'data/cron_jobs.xml',
         'views/stock_production_lot_views.xml',
         'views/report_deliveryslip_t.xml',
         'views/reporte_ingreso_inventario_pt.xml',

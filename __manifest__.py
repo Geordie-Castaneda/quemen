@@ -27,6 +27,7 @@
         'views/stock_production_lot_views.xml',
         'views/report_deliveryslip_t.xml',
         'views/reporte_ingreso_inventario_pt.xml',
+        'views/stock_inventory_report_inherit.xml',
         'views/reporte_codigo_barras_lote.xml',
         'views/reporte_corte_caja_carta.xml',
         'views/reporte_corte_caja_ticket.xml',

@@ -1,0 +1,70 @@
+<odoo>
+    <data>
+        <!-- Definición del nuevo template del reporte -->
+        <template id="custom_report_inventory">
+            <t t-call="web.html_container">
+                <t t-call="web.external_layout">
+                    <div class="page">
+                        <br/>
+                        <h2>Hoja de recuento de inventario</h2>
+                        <t t-set="locations" t-value="docs.mapped('location_id')"/>
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th groups="stock.group_stock_multi_locations"><strong>UBICACIÓN</strong></th>
+                                    <th><strong>PRODUCTO</strong></th>
+                                    <th groups="stock.group_production_lot"><strong>NÚMERO DE LOTE/SERIE</strong></th>
+                                    <th groups="stock.group_tracking_lot"><strong>Package</strong></th>
+                                    <th class="text-right"><strong>CANTIDAD A LA MANO</strong></th>
+                                    <th class="text-right"><strong>CANTIDAD CONTADA</strong></th>
+                                    <th class="text-right"><strong>DIFERENCIA</strong></th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <t t-foreach="locations" t-as="location">
+                                    <tr groups="stock.group_stock_multi_locations">
+                                        <td colspan="2"><strong t-esc="location.display_name"/></td>
+                                        <td groups="stock.group_production_lot"></td>
+                                        <td groups="stock.group_tracking_lot"></td>
+                                        <td></td>
+                                    </tr>
+                                    <tr t-foreach="docs.filtered(lambda quant: quant.location_id.id == location.id)" t-as="line">
+                                        <td groups="stock.group_stock_multi_locations"></td>
+                                        <td><span t-field="line.product_id"/></td>
+                                        <td groups="stock.group_production_lot"><span t-field="line.lot_id"/></td>
+                                        <td groups="stock.group_tracking_lot"><span t-field="line.package_id"/></td>
+                                        <td class="text-right"><span t-field="line.quantity"/> <span t-field="line.product_uom_id" groups="uom.group_uom"/></td>
+                                        <td class="text-right">
+                                            <t t-if="line.inventory_quantity == 0"><span></span></t>
+                                            <t t-else=""><span t-field="line.inventory_quantity"/></t>
+                                            <span t-field="line.product_uom_id" groups="uom.group_uom"/>
+                                        </td>
+                                        <td class="text-right">
+                                            <t t-if="line.inventory_diff_quantity">
+                                                <span t-field="line.inventory_diff_quantity"/>
+                                            </t>
+                                            <t t-else="">
+                                                <span>-</span>
+                                            </t>
+                                        </td>
+                                    </tr>
+                                </t>
+                            </tbody>
+                        </table>
+                    </div>
+                </t>
+            </t>
+        </template>
+
+        <!-- Definición del nuevo reporte que usará el template anterior -->
+        <report
+            id="custom_report_inventory_action"
+            model="stock.quant"
+            string="HOJA DE CONTEOS"
+            report_type="qweb-pdf"
+            name="quemen.custom_report_inventory"
+            file="quemen.custom_report_inventory"
+            print_report_name="'HOJA DE CONTEOS'"
+        />
+    </data>
+</odoo>

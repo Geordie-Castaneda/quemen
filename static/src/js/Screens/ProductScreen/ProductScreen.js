@@ -55,7 +55,7 @@ odoo.define('quemen.ProductScreen', function(require) {
                     if (productLot.length > 0){
                         productLot.forEach(result => {
 
-                            lot_list.push({'id': result.lot_id[0],'label': 'Lote: ' + result.lot_id[1] + ' Disponible: ' + result.quantity.toString(), isSelected: false, item: result})
+                            lot_list.push({'id': result.lot_id[0],'label': 'Lote: ' + result.lot_id[1] + ' Disponible: ' + result.quantity.toString()  + ' Caducidad: ' + result.removal_date.toString(), isSelected: false, item: result})
                         });
                         
                         const { confirmed, payload } = await this.showPopup('SelectionPopup', {

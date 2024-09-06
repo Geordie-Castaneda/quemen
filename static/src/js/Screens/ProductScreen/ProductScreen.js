@@ -55,7 +55,7 @@ odoo.define('quemen.ProductScreen', function(require) {
                     if (productLot.length > 0){
                         productLot.forEach(result => {
 
-                            lot_list.push({'id': result.lot_id[0],'label': 'Lote: ' + result.lot_id[1] + ' Disponible: ' + result.quantity.toString()  + ' Caducidad: ' + result.removal_date.toString(), isSelected: false, item: result})
+                            lot_list.push({'id': result.lot_id[0],'label': 'Lote: ' + result.lot_id[1] + ' Disponible: ' + result.quantity.toString()  + ' CAD: ' + result.removal_date.toString(), isSelected: false, item: result})
                         });
                         
                         const { confirmed, payload } = await this.showPopup('SelectionPopup', {
@@ -105,10 +105,20 @@ odoo.define('quemen.ProductScreen', function(require) {
 
                 const stock_quant = await this.lineasLote(this.env.pos.get_order().orderlines, ubicacion_id);
                 if (stock_quant.length > 0){
+                    
+                    if (stock_quant[0].length > 0 && stock_quant[0] != false){
                         return this.showPopup('ErrorPopup', {
                             title: this.env._t('Error en lote'),
-                            body: this.env._t("Lote de producto incorrecto"),
+                            body: this.env._t( stock_quant[0].toString() ),
                         });
+                    }
+                    if (stock_quant[1].length > 0 && stock_quant[1] != false){
+                        return this.showPopup('ErrorPopup', {
+                            title: this.env._t('Producto no puede quedar en negativo, revise su inventario'),
+                            body: this.env._t(stock_quant[1].toString()),
+                        });
+                    }
+
                 }
 
                 if (this.env.pos.get_order().orderlines.any(line => line.get_quantity() == 0)) {
@@ -127,7 +137,7 @@ odoo.define('quemen.ProductScreen', function(require) {
 
             }
             async lineasLote(lineas, ubicacion_id){
-                var lotes = [];
+                var products_order = [];
                 var productos = []
                 lineas.forEach(line => {
                     if (line.get_lot_lines()) {
@@ -135,7 +145,7 @@ odoo.define('quemen.ProductScreen', function(require) {
 
                         var lot_name = line.get_lot_lines()[0].attributes.lot_name
                         var product = line.get_product()
-                        lotes.push({'lote': lot_name, 'producto': product.id});
+                        products_order.push({'lote': lot_name, 'producto': product.id , 'qty': line.get_quantity() });
 
                         productos.push(product.id)
                         // lote_existe = await this.verificarLote(lot_name, ubicacion_id, product)
@@ -150,19 +160,27 @@ odoo.define('quemen.ProductScreen', function(require) {
                         //     return ;
                         // }
 
+                    }else{
+                        var product = line.get_product()
+                        if (product.lst_price > 0){
+                            products_order.push({'lote': false, 'producto': product.id, 'qty': line.get_quantity()});
+                            productos.push(product.id)                            
+                            
+                        }
+
                     }
                 })
 
-                const stock_quant = await this.verificarLote(lotes, ubicacion_id,productos)
+                const stock_quant = await this.verificarLote(products_order, ubicacion_id,productos)
                 return stock_quant
 
             }
 
-            async verificarLote(lotes, ubicacion_id){
+            async verificarLote(products_order, ubicacion_id){
                 return await this.rpc({
                     model: 'pos.order',
                     method: 'buscar_inventario',
-                    args: [[], lotes,ubicacion_id],
+                    args: [[], products_order,ubicacion_id],
                 })
             }
             async _getAddProductOptions(product, base_code) {

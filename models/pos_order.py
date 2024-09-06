@@ -16,19 +16,34 @@ class PosOrder(models.Model):
     autorizo_especial = fields.Char("Autorizó")
     invalido = fields.Boolean('Invalido')
 
-    def buscar_inventario(self, lotes, ubicacion_id):
+    def buscar_inventario(self, products_order, ubicacion_id):
         lote_no_existente = []
-        logging.warning('buscar_inventario')
-        logging.warning(lotes)
-        logging.warning(ubicacion_id)
-        for i in lotes:
-            logging.warning(i)
-            stock_quant = self.env['stock.quant'].search([('lot_id.name','=',i['lote']), ('location_id','=',ubicacion_id) ,('product_id','=', i['producto'])])
+        productos_sin_existencia = []
+        productos_agrupados = {}
+        for po in products_order:
+            llave = str(po['producto'])
+            if po['lote']:
+                llave = str(po['producto']) + '-' + str(po['lote'])
+            if llave not in productos_agrupados:
+                productos_agrupados[llave] = {'lot_id': po['lote'] , 'producto': po['producto'], 'qty': 0}
+            productos_agrupados[llave]['qty'] += po['qty']
+
+        for pa in productos_agrupados:
+            producto = productos_agrupados[pa]['producto']
+
+            lote = productos_agrupados[pa]['lot_id']
+            stock_quant = self.env['stock.quant'].search([('location_id','=',ubicacion_id) ,('product_id','=', producto)])
+            cantidad = productos_agrupados[pa]['qty']
+            if lote:
+                stock_quant = self.env['stock.quant'].search([('lot_id.name','=',lote), ('location_id','=',ubicacion_id) ,('product_id','=', producto)])
+            
             if len(stock_quant) == 0:
-                lote_no_existente.append(i['lote'])
-        logging.warning('lote no existe')
-        logging.warning(lote_no_existente)
-        return lote_no_existente
+                lote_no_existente.append(lote)
+            else:
+                if stock_quant.quantity < cantidad:
+                    productos_sin_existencia.append(stock_quant.product_id.name)
+                    
+        return lote_no_existente, productos_sin_existencia
 
     @api.model
     def _order_fields(self, ui_order):

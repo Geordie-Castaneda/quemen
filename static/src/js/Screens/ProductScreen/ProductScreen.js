@@ -114,7 +114,7 @@ odoo.define('quemen.ProductScreen', function(require) {
                     }
                     if (stock_quant[1].length > 0 && stock_quant[1] != false){
                         return this.showPopup('ErrorPopup', {
-                            title: this.env._t('Producto no puede quedar en negativo, revise su inventario'),
+                            title: this.env._t('Producto sin existencia , Revisar inventario'),
                             body: this.env._t(stock_quant[1].toString()),
                         });
                     }

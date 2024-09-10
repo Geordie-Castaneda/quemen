@@ -17,6 +17,14 @@
             <field name="padding">6</field>
             <field name="company_id" eval="False"/>
         </record>
-        
+
+        <record id="seq_quemen_planning" model="ir.sequence">
+            <field name="name">Planning</field>
+            <field name="code">quemen.planning</field>
+            <field name="prefix">QPLAN/</field>
+            <field name="padding">6</field>
+            <field name="company_id" eval="False"/>
+        </record>
+
     </data>
 </odoo>

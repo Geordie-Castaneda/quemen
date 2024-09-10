@@ -9,6 +9,11 @@ from odoo.tools import float_round
 from collections import defaultdict
 
 
+class MrpBom(models.Model):
+    _inherit = 'mrp.bom'
+
+    area = fields.Char('Area')
+
 class MrpBomLine(models.Model):
     """ Defines bills of material for a product or a product template """
     _inherit = 'mrp.bom.line'

@@ -258,3 +258,117 @@ class QuemenOpLoteLinea(models.Model):
     def _onchange_quantity(self):
         if self.product_id:
             self.qty_label = self.quantity
+
+class QuemenPlanning(models.Model):
+    _name = "quemen.planning"
+    _inherit = ['mail.thread', 'mail.activity.mixin', 'utm.mixin']
+
+    name = fields.Char('Nombre', required=True, copy=False, readonly=True, index=True, default=lambda self: _('New'), tracking=True)
+    date = fields.Date('Fecha', tracking=True)
+    planning_date = fields.Date('Fecha planificada', tracking=True)
+    product_ids = fields.One2many('quemen.planning_line', 'planning_id', string="Productos", tracking=True)
+    reference = fields.Char('Referencia', tracking=True)
+    state = fields.Selection(
+        [('borrador', 'Borrador'), ('confirmado', 'Confirmado')],
+        'Estado', readonly=True, copy=False, default='borrador', tracking=True)
+
+    @api.model
+    def create(self, vals):
+        if vals.get('name', _('New')) == _('New'):
+            seq_date = None
+            vals['name'] = self.env['ir.sequence'].next_by_code('quemen.planning', sequence_date=seq_date) or _('New')
+
+        result = super(QuemenPlanning, self).create(vals)
+        return result
+        
+    def show_components(self):
+        list_components = []
+        for p in self:
+            if p.product_ids:
+                for line in p.product_ids:
+                    origin_lines_dic = {
+                        'product_id': line.product_id,
+                        'qty': line.qty,
+                        'line': line,
+                    }
+                    line.unlink()
+                    list_components.append(origin_lines_dic)
+            
+        if len(list_components) > 0:
+            for lc in list_components:
+                group_product_components = []
+                product_id = lc['product_id']
+                
+                if product_id.bom_ids and product_id.bom_ids.bom_line_ids:
+                    group_product_components.append((0,0,{'product_id': product_id.id,'qty': lc['qty'] }) )
+                    # lc['line'].unlink()
+                    for component in product_id.bom_ids.bom_line_ids:
+                        qty_production = (product_id.bom_ids.product_qty*component.product_qty) * lc['qty']
+                        qty_stock = component.product_id.qty_available
+                        qty = qty_production - qty_stock
+
+                        group_product_components.append((0,0,{
+                            'subproduct_id': component.product_id.id,
+                            'qty_production': qty_production,
+                            'qty_stock': qty_stock,
+                            'qty': qty,
+                            'area': component.product_id.bom_ids.area,
+                        }))
+                logging.warning(group_product_components)
+                self.write({'product_ids': group_product_components})
+        return True
+    
+    def confirm_planning(self):
+        for p in self:
+            if p.product_ids:
+                group_product_components = []
+                dic_components = {}
+                for line in p.product_ids:
+                    if line.subproduct_id:
+                        if line.area not in dic_components:
+                            dic_components[line.area] = []
+                        
+                        dic_components[line.area].append((0,0, {
+                            'product_id': line.subproduct_id.id,
+                            'quantity': line.qty,
+                        }))
+
+                if len(dic_components) > 0:
+                    for component in dic_components:
+                        logging.warning(component)
+                        op_lot_id = self.env['quemen.op_lote'].create({
+                            'date': p.date, 
+                            'date_mrp_production': p.planning_date,
+                            'reference': p.name,
+                            'product_ids': dic_components[component]})
+            p.write({'state': "confirmado"})
+        return True
+
+class QuemenPlanningLine(models.Model):
+    _name = "quemen.planning_line"
+    _rec_name = "product_id"
+
+    planning_id = fields.Many2one("quemen.planning", "Planeacion")
+    product_id = fields.Many2one('product.product','Producto',tracking=True)
+    subproduct_id = fields.Many2one('product.product','Componente',tracking=True)
+    qty_production = fields.Float('Producción',tracking=True)
+    qty_stock = fields.Float('Existencia',tracking=True)
+    qty = fields.Float('Cantidad',tracking=True)
+    parent_line_id = fields.Many2one("quemen.planning_line", "Linea padre")
+    line_state = fields.Selection(
+        [('borrador', 'Borrador'), ('confirmado', 'Confirmado')],
+        'Estado', readonly=True, copy=False, related='planning_id.state')
+    area = fields.Char("Area")
+    
+    # @api.onchange('product_id')
+    # def _onchange_product_id(self):
+    #     if self.product_id and self.product_id.bom_ids:
+    #         for line in self.product_id.bom_ids.bom_line_ids:
+    #             pline_dic = {
+    #                 'subproduct_id': line.product_id.id,
+    #                 'qty_production': 0,
+    #                 'qty_stock': 0,
+    #                 'parent_line_id': self.id,
+    #                 'planning_id': self.planning_id.id,
+    #             }
+    #             new_line_id = self.env['quemen.planning_line'].create(pline_dic)

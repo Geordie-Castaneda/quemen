@@ -13,8 +13,12 @@
                      <field name="location_src_id"/>
                      <field name="stage"/>
                 </xpath>
+                <field name="code" position="after">
+                    <field name="area"/>
+                </field>    
             </field>
         </record>
+
 
 
     </data>

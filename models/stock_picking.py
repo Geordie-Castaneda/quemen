@@ -3,7 +3,7 @@ from odoo import api, fields, models, SUPERUSER_ID, _
 from odoo.exceptions import UserError
 import logging
 import pytz
-from datetime import datetime
+from datetime import datetime, timedelta
 from lxml import etree
 import re
 
@@ -26,6 +26,13 @@ class Picking(models.Model):
                 res.write({'l10n_mx_edi_transport_type': res.picking_type_id.tipo_transporte})
         return res
 
+    @api.depends('move_lines.state', 'move_lines.date', 'move_type')
+    def _compute_scheduled_date(self):
+        res = super(Picking, self)._compute_scheduled_date()
+        for picking in self:
+            new_datetime = picking.scheduled_date
+            picking.scheduled_date = new_datetime + timedelta(hours=2)
+    
     def button_validate(self):
         res = super(Picking, self).button_validate()
 

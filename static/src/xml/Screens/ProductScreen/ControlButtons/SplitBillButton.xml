@@ -8,5 +8,11 @@
             <span>Pedido especial</span>
         </span>
     </t>
-
+    
+    <t t-name="QuemenRefundButton" t-inherit="point_of_sale.RefundButton" t-inherit-mode="extension" owl="1">
+        <xpath expr="//div[hasclass('control-button')]" position="replace">
+            <div></div>
+        </xpath>
+    </t>
+    
 </templates>

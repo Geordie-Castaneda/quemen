@@ -24,10 +24,30 @@ odoo.define('quemen.PaymentScreen', function(require) {
                 var sesion = [];
                 var total_efectivo = [];
                 var ventaEfectivoActual = 0;
+                const order = this.currentOrder;
+                var pago_efectivo = false;
+                var cambio = this.currentOrder.get_change();
+                var total_pago_banco = 0;
+                
+                if (order.get_paymentlines().length > 0){
+                    order.get_paymentlines().forEach(function (line) {
+                        if (line.payment_method.type == "cash"){
+                            pago_efectivo = true
+                        }else{
+                            total_pago_banco += line.amount
+                        }
+                    });
+  
+                }
+
+                if (pago_efectivo == false && order.get_paymentlines().length >= 1 && cambio > 0 || total_pago_banco > this.currentOrder.get_total_with_tax()){
+                    return await Gui.showPopup('ErrorPopup', {
+                            'title': _t("Error en pago"),
+                            'body': _t("Monto de pago incorrecto"),
+                        });
+                }
 
                 this.currentOrder.get_paymentlines().forEach(function (line) {
-                    console.log('pagos')
-                    console.log(line)
                     if (line.payment_method.is_cash_count == true){
                         ventaEfectivoActual += line.amount
                     }

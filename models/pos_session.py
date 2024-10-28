@@ -159,8 +159,8 @@ class PosSession(models.Model):
                 pedido_impuesto = pedido.amount_tax
                 for linea in pedido.lines:
                     if linea.price_subtotal_incl < 0 and linea.program_id:
-                        #dominio = linea.program_id.rule_products_domain
-                        #dominio = ast.literal_eval(dominio)
+                        dominio = linea.program_id.rule_products_domain
+                        dominio = ast.literal_eval(dominio)
                         #producto_ids = self.env['product.product'].search(dominio)
                         producto_ids = self.env['product.product'].search([('id','in', linea.program_id.discount_specific_product_ids.ids)])
                         if producto_ids[0].taxes_id[0].name == "IVA(16%) VENTAS":

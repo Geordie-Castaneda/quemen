@@ -9,3 +9,4 @@ class StockQuant(models.Model):
     _inherit = "stock.quant"
 
     referencia_interna = fields.Char('Referencia interna',related="product_id.default_code",store=True)
+    expiration_date = fields.Datetime(related='lot_id.expiration_date', store=True, readonly=True)

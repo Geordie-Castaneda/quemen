@@ -162,7 +162,12 @@ class PosSession(models.Model):
                         dominio = linea.program_id.rule_products_domain
                         dominio = ast.literal_eval(dominio)
                         #producto_ids = self.env['product.product'].search(dominio)
-                        producto_ids = self.env['product.product'].search([('id','in', linea.program_id.discount_specific_product_ids.ids)])
+                        producto_ids = []
+                        if linea.program_id.discount_specific_product_ids.ids:
+                            producto_ids = self.env['product.product'].search([('id','in', linea.program_id.discount_specific_product_ids.ids)])
+                        else:
+                            producto_ids = linea.program_id.discount_line_product_id
+                            
                         if producto_ids[0].taxes_id[0].name == "IVA(16%) VENTAS":
                             impuesto_programa_16 =  "IVA(16%) VENTAS"
                             total_descuento_16 += (linea.price_subtotal_incl*-1)

@@ -10,26 +10,12 @@ import re
 class Picking(models.Model):
     _inherit = "stock.picking"
 
-    l10n_mx_edi_customs_regime_ids = fields.Many2many(
-        string="Customs Regimes",
-        help="Regimes associated to the good's transfer (import or export).",
-        comodel_name='l10n_mx_edi.customs.regime',
-        ondelete='restrict',
-    )
-
-    def _l10n_mx_edi_dg_render(self, values):
-        logging.warning("_l10n_mx_edi_dg_render")
-        logging.warning(values)
-        return self.env.ref('l10n_mx_edi_stock_40.cfdi_cartaporte_40')._render(values)
-    
-    def _l10n_mx_edi_get_picking_cfdi_values(self):
-        # EXTENDS 'l10n_mx_edi_stock'
-        cfdi_values = super()._l10n_mx_edi_get_picking_cfdi_values()
-        supplier_name = cfdi_values['supplier'].name
-        clean_supplier_name = self.env['account.edi.format']._l10n_mx_edi_clean_to_legal_name(supplier_name)
-        logging.warning("_l10n_mx_edi_get_picking_cfdi_values")
-        logging.warning(cfdi_values)
-        return {**cfdi_values, 'supplier_name': clean_supplier_name}
+    # l10n_mx_edi_customs_regime_ids = fields.Many2many(
+    #     string="Customs Regimes",
+    #     help="Regimes associated to the good's transfer (import or export).",
+    #     comodel_name='l10n_mx_edi.customs.regime',
+    #     ondelete='restrict',
+    # )
     
     @api.model
     def create(self, vals):

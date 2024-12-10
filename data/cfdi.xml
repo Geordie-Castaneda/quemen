@@ -16,7 +16,7 @@
                     <attribute name="t-att-Descripcion">line.product_id.name</attribute>
                 </t>
                 <attribute name="t-att-NoIdentificacion">line.product_id.default_code</attribute>
-                <attribute name="t-att-Unidad">line.product_uom_id.name</attribute>
+                <attribute name="t-att-Unidad">"PIEZA"</attribute>
             </xpath>    
         </template>
 

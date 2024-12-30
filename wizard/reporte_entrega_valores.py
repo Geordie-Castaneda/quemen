@@ -17,6 +17,9 @@ from odoo.fields import Date, Datetime
 class reporte_entrega_valores_wizard(models.TransientModel):
     _name = 'quemen.reporte_entrega_valores.wizard'
 
+    def _get_current_date(self):
+        return datetime.datetime.now() - timedelta(hours=6)
+    
     def _tienda_actual(self):
         tienda = False
         logging.warning('usuario ')
@@ -30,7 +33,7 @@ class reporte_entrega_valores_wizard(models.TransientModel):
     fecha_inicio = fields.Datetime('Fecha inicio')
     fecha_fin = fields.Datetime('Fecha fin')
     tienda_id = fields.Many2one('pos.config','Tienda/Sucursal',default=_tienda_actual, required=True)
-    fecha_generacion = fields.Datetime('Fecha/Hora',default=fields.Datetime.now)
+    fecha_generacion = fields.Datetime('Fecha/Hora',default=lambda self: self._get_current_date())
 
     def print_report(self):
         data = {

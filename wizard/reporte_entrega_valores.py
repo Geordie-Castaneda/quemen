@@ -7,7 +7,7 @@ import base64
 import xlsxwriter
 import io
 import logging
-from datetime import date
+from datetime import date, timedelta
 import datetime
 import dateutil.parser
 from dateutil.relativedelta import relativedelta

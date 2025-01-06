@@ -66,7 +66,8 @@ class ReporteCorteCajaCarta(models.AbstractModel):
         total_detalle_facturas_expedidas = 0.00
         diferencia = 0.00
         apertura_efectivo = docs.cash_register_balance_start
-        retiro_efectivo = 0.00
+        total_retiro_efectivo = 0.00
+        total_retiro_efectivo_sesion_previa = 0.00
         venta_efectivo = 0.00
         cierre_efectivo = docs.cash_register_balance_end_real
         retiro_corte_previo = {}
@@ -468,7 +469,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
         for retiro in retiros:
             distint += 1
             listado_retiros.append({'n_retiro': retiro.name, 'distintivo': retiro.motivo, 'fecha_hora': retiro.fecha_hora, 'cantidad': retiro.total, 'cajero': retiro.cajero })
-            retiro_efectivo += retiro.total
+            total_retiro_efectivo += retiro.total
 
         logging.warning(listado_retiros)
         total_retiros = 0
@@ -487,12 +488,12 @@ class ReporteCorteCajaCarta(models.AbstractModel):
         for retiro in retiros:
             distint += 1
             retiros_corte_previa.append({'n_retiro': retiro.name, 'distintivo': retiro.motivo, 'fecha_hora': retiro.fecha_hora, 'cantidad': retiro.total, 'cajero': retiro.cajero })
-            retiro_efectivo += retiro.total
+            total_retiro_efectivo_sesion_previa += retiro.total
 
         logging.warning(retiros_corte_previa)
-        total_retiros = 0
+        total_retiros_noentregados = 0
         for list_ret in retiros_corte_previa:
-            total_retiros += list_ret['cantidad']
+            total_retiros_noentregados += list_ret['cantidad']
         folios_concatenados = folios[0] + ' - ' + folios[-1]
 
 
@@ -666,7 +667,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
         total_ventas_mostrador = ventas_mostrador['total']
         total_facturas_expedidas = resumen_facturas_expedidas['total'] + resumen_factura_global['total']
 
-        diferencia = apertura_efectivo + retiro_efectivo - venta_efectivo - cierre_efectivo
+        diferencia = apertura_efectivo + total_retiro_efectivo - venta_efectivo - cierre_efectivo
 
         return {
         'listado_productos': listado_productos,

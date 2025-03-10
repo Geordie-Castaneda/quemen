@@ -1,0 +1,78 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <template id="reporte_productos_prelabor_venta">
+        <t t-call="web.html_container">
+            <!-- <t t-foreach="docs" t-as="o"> -->
+                    <!-- <div class="header">
+                        <img src="/web/binary/company_logo" style="width:50%"/>
+                    </div> -->
+                <div class="article">
+
+                    <div class="page">
+                        <img src="/web/binary/company_logo" style="width:50%"/>
+                        <t t-set="productos" t-value="productos_vencimiento(data['tienda_id'])"/>
+                        <t t-set="obtener_tienda" t-value="obtener_tienda(data['tienda_id'])"/>
+                        <center><strong>Reporte de productos para labor de venta</strong></center>
+                        <table style="margin: 0 auto;width:100%">
+                            <tr>
+                                <td>Sucursal:</td>
+                                <td style="text-align:right"><span t-esc="obtener_tienda.name"/></td>
+                            </tr>
+                            <tr>
+                                <td>Dirección:</td>
+                                <td style="text-align:right">
+                                    <span t-esc="user.pos_id.picking_type_id.warehouse_id.partner_id.street_name"/>
+                                    <span t-esc="user.pos_id.picking_type_id.warehouse_id.partner_id.l10n_mx_edi_colony"/>
+                                    <span t-esc="user.pos_id.picking_type_id.warehouse_id.partner_id.l10n_mx_edi_locality"/>
+                                    <span t-esc="user.pos_id.picking_type_id.warehouse_id.partner_id.city_id.name"/>
+                                    <span t-esc="user.pos_id.picking_type_id.warehouse_id.partner_id.state_id.name"/>
+    
+                                </td>
+                            </tr>
+                            <tr>
+                                <td>Fecha/Hora:</td>
+                                <td style="text-align:right"><span t-esc="fecha_hora_actual()"/></td>
+                            </tr>
+                            <!-- <tr>
+                                <td>Turno:</td>
+                                <td style="text-align:right"></td>
+                            </tr> -->
+                        </table>
+    
+                        <table style="margin: 0 auto;width:100%">
+                            <tr>
+                                <td><strong>Código barras</strong></td>
+                                <td><strong>Existencia</strong></td>
+                            </tr>
+                            <t t-foreach="productos" t-as="linea">
+                                <tr>
+                                    <td>
+                                        <span t-esc="linea.product_id.name"/><br/>
+                                        <span t-esc="linea.lot_id.name"/><br/>
+                                        <span t-esc="linea.lot_id.expiration_date.strftime('%d/%m/%Y')"/>
+                                    </td>
+                                    <td style="text-align:right"><span t-esc="linea.quantity"/></td>
+                                </tr>
+                            </t>
+                        </table>
+                        <br/>
+                        <br/>
+                        <center>
+                            <table>
+                                <tr>
+                                    <td style=" border-top: 1px solid #111;text-align:center"><strong>Nombre y firma de cajero</strong></td>
+                                </tr>
+                                <tr>
+                                    <td style="height:1cm"></td>
+                                </tr>
+                                <tr>
+                                    <td style=" border-top: 1px solid #111;text-align:center"><strong>Nombre y firma del vendedor</strong></td>
+                                </tr>
+                            </table>
+                        </center>
+                    </div>
+                </div>
+            <!-- </t> -->
+        </t>
+    </template>
+</odoo>

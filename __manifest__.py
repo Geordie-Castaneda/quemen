@@ -31,6 +31,8 @@
         'views/reporte_codigo_barras_lote.xml',
         'views/reporte_corte_caja_carta.xml',
         'views/reporte_corte_caja_ticket.xml',
+        'views/reporte_productos_prelabor_venta.xml',
+        'wizard/reporte_productos_prelabor_venta_wizard.xml',
         'views/report.xml',
         'views/vale_retiro.xml',
         'views/reporte_planeacion.xml',

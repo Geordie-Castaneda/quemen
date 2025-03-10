@@ -15,3 +15,4 @@ from . import reporte_explosion_insumos_costo
 from . import reporte_codigo_barras_lote
 from . import reporte_corte_caja_carta
 from . import reporte_corte_caja_ticket
+from . import reporte_productos_prelabor_venta

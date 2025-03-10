@@ -45,7 +45,7 @@
                             type="date"
                             id="meeting-time"
                             name="meeting-time"
-                            style="font-size:80%; width:90%;"/>
+                            style="font-size:80%; width:90%;" onkeypress="return false;"/>
 
                         </td>
                         <td></td>
@@ -107,7 +107,7 @@
                 </footer>
             </div>
         </Draggable>
-        </div>    
+        </div>
     </t>
 
 </templates>

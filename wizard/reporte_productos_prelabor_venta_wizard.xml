@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<odoo>
+    <data>
+
+        <record id="view_quemen_productos_prelabor_venta_wizard" model="ir.ui.view">
+              <field name="name">view.quemen.productos.prelabor.venta.wizard.</field>
+              <field name="model">quemen.reporte_productos_prelabor_venta.wizard</field>
+              <field name="arch" type="xml">
+                <form string="Productos Pre labor de venta">
+                    <group>
+                        <field name="tienda_id"/>
+                    </group>
+                    <footer>
+                        <!-- <button name="print_report" string="Print"  type="object" class="btn-primary"/> -->
+                        <button name="print_report" string="Generar reporte" type="object" class="oe_highlight"/>
+                        <button string="Cancel" class="btn-default" special="cancel" />
+                    </footer>
+                </form>
+              </field>
+        </record>
+
+
+
+        <act_window id="quemen_action_reporte_productos_prelabor_venta"
+            name="Reporte de productos para Pre labor de venta"
+            binding_model="pos.order"
+            res_model="quemen.reporte_productos_prelabor_venta.wizard"
+            view_mode="form" target="new"/>
+
+            <menuitem action="quemen_action_reporte_productos_prelabor_venta" id="menu_productos_prelabor_venta" parent="quemen.menu_quemen_reporte_tiendas"/>
+
+
+    </data>
+</odoo>

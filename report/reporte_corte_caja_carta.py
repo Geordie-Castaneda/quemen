@@ -1,4 +1,7 @@
-from odoo import api, models
+from odoo import api, models, _
+from odoo.exceptions import UserError, ValidationError
+from datetime import datetime
+import pytz
 import ast
 import logging
 
@@ -696,7 +699,13 @@ class ReporteCorteCajaCarta(models.AbstractModel):
     @api.model
     def _get_report_values(self, docids, data=None):
         docs = self.env['pos.session'].browse(docids)
-        logging.warning('reporte final')
+        timezone = pytz.timezone(self._context.get('tz') or self.env.user.tz or 'UTC')
+        fecha_hoy = datetime.now().astimezone(timezone).strftime('%H')
+        estado_sesion = False
+        for sesion in docs:
+            estado_sesion = sesion.state
+        if int(fecha_hoy) >= 13 and estado_sesion != "closed":
+            raise ValidationError("No tiene permitido generar corte de caja, favor de cerrar sesión")
         return {
             'doc_ids': docids,
             'doc_model': 'pos.session',

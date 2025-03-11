@@ -1,7 +1,7 @@
 # -*- encoding: utf-8 -*-
 
 from odoo import models, fields, api, _
-from odoo.exceptions import UserError
+from odoo.exceptions import UserError, ValidationError
 import logging
 
 class PosOrder(models.Model):
@@ -87,3 +87,14 @@ class PosOrder(models.Model):
             res['sesion_id'] = order_line.order_id.session_id.id
             res['pedido_id'] = order_line.order_id.id
         return res
+
+class PosMakePayment(models.TransientModel):
+    _inherit = 'pos.make.payment'
+
+    def check(self):
+        order = self.env['pos.order'].browse(self.env.context.get('active_id', False))
+        if order.note == False and order.amount_total < 0:
+            raise ValidationError("No está permitido validar la devolución hasta que ingrese el motivo de la devolución en la pestaña de notas")
+        else:
+            res = super(PosMakePayment, self).check()
+            return self.launch_payment()

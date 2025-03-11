@@ -34,7 +34,7 @@ class ReportProductosPreLaborVenta(models.AbstractModel):
     def fecha(self):
         timezone = pytz.timezone(self._context.get('tz') or self.env.user.tz or 'UTC')
         fecha_hoy = datetime.datetime.now().astimezone(timezone).date()
-        fecha_hoy = datetime.datetime.strptime(str(fecha_hoy),'%Y-%m-%d') + timedelta(days = 4)
+        fecha_hoy = datetime.datetime.strptime(str(fecha_hoy),'%Y-%m-%d') + timedelta(days = 2)
         logging.warning(fecha_hoy.date())
         return fecha_hoy.date()
 

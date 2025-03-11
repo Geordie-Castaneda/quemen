@@ -52,9 +52,6 @@ class ReportProductosPreLaborVenta(models.AbstractModel):
         model = self.env.context.get('active_model')
         docs = self.env[model].browse(self.env.context.get('active_ids', []))
         tienda_id = data['form']['tienda_id']
-        fecha = data['form']['x_fecha']
-        logging.warning('fecha')
-        logging.warning(fecha)
         return {
             'data': data['form'],
             'docs': docs,

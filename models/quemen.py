@@ -122,8 +122,11 @@ class QuemenRetirosEfectivo(models.Model):
 
     def confirmar_retiro(self):
         for retiro in self:
-            retiro.sesion_id.cash_register_id.write({'line_ids': [(0, 0,  { 'payment_ref': retiro.motivo, 'amount': retiro.total*-1})] })
-            retiro.write({'state': 'confirmado'})
+            if retiro.state != "confirmado":
+                if retiro.total > retiro.tienda_id.efectivo_maximo:
+                    raise ValidationError(_('El total del retiro no puede ser mayor que el limite de efectivo configurado'))
+                retiro.sesion_id.cash_register_id.write({'line_ids': [(0, 0,  { 'payment_ref': retiro.motivo, 'amount': retiro.total*-1})] })
+                retiro.write({'state': 'confirmado'})
 
 
 class QuemenRetiros(models.Model):

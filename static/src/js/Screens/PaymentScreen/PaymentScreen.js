@@ -47,11 +47,11 @@ odoo.define('quemen.PaymentScreen', function(require) {
                         });
                 }
 
-                this.currentOrder.get_paymentlines().forEach(function (line) {
-                    if (line.payment_method.is_cash_count == true){
-                        ventaEfectivoActual += line.amount
-                    }
-                });
+                // this.currentOrder.get_paymentlines().forEach(function (line) {
+                //     if (line.payment_method.is_cash_count == true){
+                //         ventaEfectivoActual += line.amount
+                //     }
+                // });
 
                 try {
                     sesion = await this.rpc({
@@ -81,7 +81,8 @@ odoo.define('quemen.PaymentScreen', function(require) {
                     var datos_sesion = sesion[0];
                     var pagos_efectivo = datos_sesion.pagos_efectivo;
                     var retiros_efectivo = datos_sesion.retiros_efectivo;
-                    total_efectivo = (pagos_efectivo+ventaEfectivoActual) - retiros_efectivo;
+                    //total_efectivo = (pagos_efectivo+ventaEfectivoActual) - retiros_efectivo;
+                    total_efectivo = pagos_efectivo - retiros_efectivo;
                     console.log('total efectivo')
                     console.log(total_efectivo)
                     if (total_efectivo >= efectivoMaximo){

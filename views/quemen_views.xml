@@ -112,7 +112,7 @@
                 <field name="arch" type="xml">
                     <form string="Retiros">
                         <header>
-                            <button string="Confirmar" class="oe_highlight" name="confirmar_retiro" type="object"/>
+                            <button string="Confirmar" class="oe_highlight" name="confirmar_retiro" type="object" states="borrador"/>
                             <field name="state" widget="statusbar" statusbar_visible="borrador,confirmado"/>
 
                         </header>
@@ -134,6 +134,7 @@
                                     <field name="fecha_hora"/>
                                     <field name="total"/>
                                     <field name="entregado"/>
+                                    <field name="ultimo_retiro"/>
                                 </group>
                             </group>
                             <notebook>

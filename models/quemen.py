@@ -102,6 +102,7 @@ class QuemenRetirosEfectivo(models.Model):
     'Estado', readonly=True, copy=False, default= "borrador")
     cajero = fields.Char('Cajero', required=True)
     entregado = fields.Boolean('Entregado', readonly=True)
+    ultimo_retiro = fields.Boolean("último retiro")
 
     @api.model_create_multi
     def create(self, vals_list):

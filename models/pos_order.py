@@ -97,4 +97,4 @@ class PosMakePayment(models.TransientModel):
             raise ValidationError("No está permitido validar la devolución hasta que ingrese el motivo de la devolución en la pestaña de notas")
         else:
             res = super(PosMakePayment, self).check()
-            return self.launch_payment()
+            return res

@@ -17,6 +17,18 @@ class Picking(models.Model):
     #     ondelete='restrict',
     # )
     
+    generar_nuevos_lotes = fields.Boolean("Generar nuevos lotes", related="picking_type_id.generar_nuevos_lotes")
+    producto_ids = fields.One2many("quemen.stock_move_line", "picking_id", "Productos")
+
+    def write(self, vals):
+        for picking in self:
+            if 'partner_id' in vals:
+                partner_id = self.env["res.partner"].search([("id", "=", vals["partner_id"])])
+                if partner_id.location_dest_id:
+                    vals['location_dest_id'] = partner_id.location_dest_id.id
+        res = super(Picking, self).write(vals)
+        return res
+
     @api.model
     def create(self, vals):
         res = super(Picking, self).create(vals)
@@ -34,16 +46,75 @@ class Picking(models.Model):
             picking.scheduled_date = new_datetime + timedelta(hours=2)
     
     def button_validate(self):
-        res = super(Picking, self).button_validate()
+        if self.generar_nuevos_lotes == True:
+            if len(self.producto_ids) == 0:
+                raise ValidationError("Debe de llenar la pestaña de productos")
+            else:
+                for linea in self.producto_ids:
+                    StockQuant = self.env['stock.quant']
+                    quant = StockQuant.search([('product_id', '=', linea.product_id.id), ('location_id', '=', self.location_id.id),("lot_id", "=", linea.lote_id.id)], limit=1)
+                    existencia = 0
+                    if quant:
+                        existencia = quant.available_quantity
 
-        logging.warning('button_validate')
-        logging.warning(self.picking_type_id.tipo_operacion_porcion_id)
+                    quant_id = self.env["stock.quant"].with_context(inventory_mode=True).sudo().create({
+                        'location_id': self.location_id.id,
+                        'product_id': linea.product_id.id,
+                        'lot_id': linea.lote_id.id,
+                        'inventory_quantity': existencia-linea.cantidad,
+                    }).action_apply_inventory()
+
+                    if existencia > 0:
+
+                        elaboration_date = datetime.fromisoformat(fields.Date.today().isoformat() + ' 06:00:00')
+                        expiration_date = elaboration_date + timedelta(days=linea.product_id.expiration_time)
+                        removal_date = expiration_date
+                        use_date = expiration_date
+                        alert_date = expiration_date
+                        nuevo_lote_id = self.env['stock.production.lot'].create({
+                            'company_id': self.env.company.id,
+                            'elaboration_date': elaboration_date,
+                            'expiration_date': expiration_date,
+                            'removal_date': removal_date,
+                            'use_date': use_date,
+                            'alert_date': alert_date,
+                            'product_id': linea.product_id.id})
+
+                        if nuevo_lote_id:
+                            nuevo_quant_id = self.env["stock.quant"].with_context(inventory_mode=True).sudo().create({
+                                'location_id': self.location_id.id,
+                                'product_id': linea.product_id.id,
+                                'lot_id': nuevo_lote_id.id,
+                                'inventory_quantity': linea.cantidad,
+                            }).action_apply_inventory()
+
+                            lineas_transferencia_id = self.env['stock.move.line'].create({
+                                'picking_id': self.id,
+                                'product_id': linea.product_id.id,
+                                #'product_uom_qty': linea.cantidad,
+                                'product_uom_id': linea.product_id.uom_id.id,
+                                'location_id': self.location_id.id,
+                                'location_dest_id': self.location_dest_id.id,
+                                'qty_done': linea.cantidad,
+                                'lot_id': nuevo_lote_id.id
+                            })
+                        else:
+                            raise ValidationError("Error al crear lote")
+    
+
+        if self.picking_type_id.salida_traspaso==True:
+            if len(self.partner_id) == 0:
+                raise ValidationError("La dirección de entrega es requerida")
+            if self.partner_id.location_dest_id == False:
+                raise ValidationError("La Ubicacion de entrega dentro del contacto es requerida")
+
         if self.picking_type_id.tipo_operacion_porcion_id:
             transferencia_id = self.producto_porciones()
             logging.warning(transferencia_id)
             if  transferencia_id:
                 transferencia_id.action_assign()
                 transferencia_id.button_validate()
+        res = super(Picking, self).button_validate()
         return res
 
 
@@ -421,3 +492,5 @@ class StockPickingType(models.Model):
     tipo_operacion_porcion_id = fields.Many2one('stock.picking.type', string='Tipo operacion porcion')
     picking_partner_id = fields.Many2one('res.partner','Contacto')
     tipo_transporte = fields.Selection([('00', 'Sin uso de Carreteras Federales'), ('01', 'Autotransporte Federal')], string='Tipo de transporte')
+    salida_traspaso = fields.Boolean("Salida por traspaso")
+    generar_nuevos_lotes = fields.Boolean("Generar nuevos lotes")

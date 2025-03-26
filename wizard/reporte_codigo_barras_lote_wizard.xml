@@ -26,6 +26,29 @@
         </record>
 
 
+        <record id="view_quemen_reporte_codigo_barras_lotet_wizard" model="ir.ui.view">
+              <field name="name">view.quemen.codigo.barras.lotet.wizard.</field>
+              <field name="model">quemen.reporte_cbarra_lotet.wizard</field>
+              <field name="arch" type="xml">
+                <form string="Codigos de barra">
+                    <group>
+                        <field name="product_ids">
+                            <tree string="Productos" editable="bottom">
+                                <field name="product_id" readonly="True"/>
+                                <field name="qty_done" readonly="True"/>
+                                <!-- <field name="qty_label"/> -->
+                            </tree>
+                        </field>
+                    </group>
+                    <footer>
+                        <button name="print_report" string="Generar codigos de barra" type="object" class="oe_highlight"/>
+                        <button string="Cancel" class="btn-default" special="cancel" />
+                    </footer>
+                </form>
+              </field>
+        </record>
+
+        
 
         <record id="action_quemen_reporte_codigo_barras" model="ir.actions.act_window">
             <field name="name">Codigo de barras</field>
@@ -37,15 +60,15 @@
             <!-- <field name="paperformat_id" ref="quemen.paperformat_ticket"/> -->
         </record>
 
-            <!-- <act_window id="window_planilla" name="Planilla" res_model="hr_gt.planilla.wizard" src_model="account.journal" view_mode="form" target="new"/> -->
-
-
-            <!-- <report id="action_planilla" model="hr_gt.planilla.wizard" string="Planilla" report_type="qweb-pdf" name="l10n_gt_extra.reporte_compras" file="l10n_gt_extra.reporte_compras"/> -->
-
-            <!-- <menuitem action="quemen_action_reporte_entrega_valores" id="menu_entrega_valores" parent="point_of_sale.menu_point_rep"/> -->
-
-            <!-- <report id="action_reporte_productos_labor_venta" model="point_of_sale.menu_point_rep" string="Reporte de productos para labor de venta" report_type="qweb-pdf" name="quemen.reporte_productos_labor_venta" file="quemen.reporte_productos_labor_venta" paperformat="paperformat_ticket"/> -->
-
+        <record id="action_quemen_reporte_codigo_barras_lotet" model="ir.actions.act_window">
+            <field name="name">Codigo de barras traslado</field>
+            <field name="res_model">quemen.reporte_cbarra_lotet.wizard</field>
+            <field name="view_mode">form</field>
+            <field name="view_id" ref="view_quemen_reporte_codigo_barras_lotet_wizard"/>
+            <field name="target">new</field>
+            <field name="binding_model_id" ref="stock.model_stock_picking"/>
+            <!-- <field name="paperformat_id" ref="quemen.paperformat_ticket"/> -->
+        </record>
 
     </data>
 </odoo>

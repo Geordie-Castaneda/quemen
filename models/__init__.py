@@ -16,3 +16,4 @@ from . import stock_production_lot
 from . import stock_move
 from . import account_move
 from . import account_edi_format
+from . import res_partner

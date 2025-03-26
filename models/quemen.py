@@ -6,6 +6,15 @@ from odoo.exceptions import UserError, ValidationError
 import logging
 import pytz
 
+class QuemenStockMoveLine(models.Model):
+    _name = "quemen.stock_move_line"
+
+    picking_id = fields.Many2one("stock.picking", "Picking")
+    product_id = fields.Many2one("product.product", "Producto")
+    lote_id = fields.Many2one("stock.production.lot", "Lote")
+    cantidad = fields.Float("Cantidad")
+    qty_label = fields.Float("Cantidad etiqueta")
+
 class QuemenPromociones(models.Model):
     _name = "quemen.promociones"
 
@@ -124,10 +133,14 @@ class QuemenRetirosEfectivo(models.Model):
     def confirmar_retiro(self):
         for retiro in self:
             if retiro.state != "confirmado":
-                if retiro.total > retiro.tienda_id.efectivo_maximo:
+                if retiro.total > retiro.tienda_id.efectivo_maximo and retiro.ultimo_retiro == False:
                     raise ValidationError(_('El total del retiro no puede ser mayor que el limite de efectivo configurado'))
-                retiro.sesion_id.cash_register_id.write({'line_ids': [(0, 0,  { 'payment_ref': retiro.motivo, 'amount': retiro.total*-1})] })
-                retiro.write({'state': 'confirmado'})
+                if retiro.sesion_id.total_efectivo_caja < retiro.tienda_id.efectivo_maximo and retiro.ultimo_retiro == False:
+                    raise ValidationError(_('El efectivo en caja es menor al límite de efectivo configirado'))
+
+                if (retiro.sesion_id.total_efectivo_caja < retiro.tienda_id.efectivo_maximo and retiro.ultimo_retiro == True) or (retiro.sesion_id.total_efectivo_caja >= retiro.tienda_id.efectivo_maximo):
+                    retiro.sesion_id.cash_register_id.write({'line_ids': [(0, 0,  { 'payment_ref': retiro.motivo, 'amount': retiro.total*-1})] })
+                    retiro.write({'state': 'confirmado'})
 
 
 class QuemenRetiros(models.Model):

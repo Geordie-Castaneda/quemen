@@ -10,3 +10,4 @@ from . import reporte_salidas
 from . import reporte_retiros_sesion
 from . import reporte_codigo_barras_lote
 from . import reporte_productos_prelabor_venta
+from . import reporte_codigo_barras_lotet

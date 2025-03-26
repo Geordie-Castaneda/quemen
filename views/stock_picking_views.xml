@@ -1,6 +1,28 @@
 <?xml version="1.0" encoding="utf-8"?>
 <odoo>
 
+        <record model="ir.ui.view" id="quemen_view_picking_form">
+            <field name="name">quemen.stock.picking.form</field>
+            <field name="model">stock.picking</field>
+            <field name="inherit_id" ref="stock.view_picking_form"/>
+            <field name="arch" type="xml">
+                <field name="is_locked" position="after">
+                    <field name="generar_nuevos_lotes" invisible="1"/>
+                </field>
+                <page name="detailed_operations" position="before">
+                    <page string="Productos" name="productos" attrs="{'invisible': [('generar_nuevos_lotes', '=', False)]}">
+                        <field name="producto_ids" mode="tree">
+                            <tree editable="bottom">
+                                <field name="product_id"/>
+                                <field name="lote_id" domain="[('product_id','=',product_id)]"/>
+                                <field name="cantidad"/>
+                            </tree>
+                        </field>    
+                    </page>   
+                </page>    
+            </field>
+        </record>
+
         <record model="ir.ui.view" id="quemen_view_picking_type_form">
             <field name="name">Quemen Operation Types</field>
             <field name="model">stock.picking.type</field>
@@ -11,7 +33,9 @@
                     <!-- <field name="porciones"/> -->
                     <field name="tipo_operacion_porcion_id"/>
                     <field name="picking_partner_id"/>
-                    <field name="tipo_transporte"/>                    
+                    <field name="tipo_transporte"/>
+                    <field name="salida_traspaso"/>
+                    <field name="generar_nuevos_lotes"/>
                 </field>
             </field>
         </record>

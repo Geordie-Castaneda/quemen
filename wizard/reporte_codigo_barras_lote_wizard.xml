@@ -36,7 +36,7 @@
                             <tree string="Productos" editable="bottom">
                                 <field name="product_id" readonly="True"/>
                                 <field name="qty_done" readonly="True"/>
-                                <!-- <field name="qty_label"/> -->
+                                <field name="cantidad_etiquetas"/>
                             </tree>
                         </field>
                     </group>

@@ -18,6 +18,7 @@ class StockMoveLine(models.Model):
     _inherit = "stock.move.line"
 
     barcode = fields.Char('Código de barra')
+    cantidad_etiquetas = fields.Float('Cantidad etiquetas')
 
     @api.onchange('barcode')
     def _onchange_barcode(self):

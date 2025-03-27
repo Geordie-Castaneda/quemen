@@ -92,60 +92,20 @@ class CaodigoBarrasLoteTraslado(models.AbstractModel):
         return {'elab': elab,'cad':cad}
 
     def create_lot(self, product_ids):
-        logging.warning('EL O')
-        logging.warning(product_ids)
         op_lote_line_ids = self.env['stock.move.line'].search([('id','in',product_ids )])
         barcode_lot = []
         barcode_lot_list = []
-        # for line in op_lote_line_ids:
-        #     logging.warning(line)
-        #     logging.warning(line.lot_barcode_id)
-        #     if len(line.lot_barcode_id) == 0:
-        #         raise ValidationError(_('No puede generar códigos de barra con productos sin Lote.'))
-        #     if line.elaboration_date:
-        #         logging.warning(line.elaboration_date)
-        #         if line.lot_barcode_id:
-        #             if line.elaboration_date != line.lot_barcode_id.elaboration_date:
-        #                 elaboration_date = datetime.datetime.fromisoformat(line.elaboration_date.isoformat() + ' 06:00:00')
-        #                 expiration_date = elaboration_date + datetime.timedelta(days=line.product_id.expiration_time)
-        #                 removal_date = elaboration_date + datetime.timedelta(days=line.product_id.removal_time)
-        #                 use_date = elaboration_date + datetime.timedelta(days=line.product_id.use_time)
-        #                 alert_date = elaboration_date + datetime.timedelta(days=line.product_id.alert_time)
-        #                 line.lot_barcode_id.write({
-        #                                   'elaboration_date': elaboration_date,
-        #                                   'expiration_date': expiration_date,
-        #                                   'removal_date': removal_date,
-        #                                   'use_date': use_date,
-        #                                   'alert_date': alert_date})
-        #         else:
-        #             elaboration_date = datetime.datetime.fromisoformat(line.elaboration_date.isoformat() + ' 06:00:00')
-        #             expiration_date = elaboration_date + datetime.timedelta(days=line.product_id.expiration_time)
-        #             removal_date = elaboration_date + datetime.timedelta(days=line.product_id.removal_time)
-        #             use_date = elaboration_date + datetime.timedelta(days=line.product_id.use_time)
-        #             alert_date = elaboration_date + datetime.timedelta(days=line.product_id.alert_time)
 
-
-        #         dates = self.fecha_barras(line.lot_barcode_id)
-        #         barcode_lot.append({
-        #             'product': line.product_id,
-        #             'elab':  dates['elab'],
-        #             'cad': dates['cad'],
-        #             # 'barcode_number': barcode_number,
-        #             'lot': line.lot_barcode_id,
-        #             'quantity': line.qty_label,
-        #         })
-
-        #logging.warning(barcode_lot)
         for p in op_lote_line_ids:
             count = 0
-            while count < p.qty_done:
+            while count < p.cantidad_etiquetas:
                 dates = self.fecha_barras(p.lot_id)
                 barcode_info = {
                         'product': p.product_id,
                         'elab':  dates["elab"],
                         'cad':   dates["cad"],
                         'lot': p.lot_id,
-                        'quantity': p.qty_done,
+                        'quantity': p.cantidad_etiquetas,
                 }
                 barcode_lot_list.append(barcode_info)
                 count += 1

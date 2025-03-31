@@ -8,7 +8,28 @@ from datetime import datetime
 class StockMove(models.Model):
     _inherit = "stock.move"
 
-
+    def _actualizar_cantidades(self, cantidad):
+        lot_ids = self.env["stock.production.lot"].search([("name","!=", "0000000"),("product_qty", ">", 0)])
+        logging.warning(len(lot_ids))
+        quant_ids = self.env["stock.quant"].search([("location_id","=", 357),("lot_id","in", lot_ids.ids)])
+        logging.warning(len(quant_ids))
+        contador = 0
+        for m in quant_ids:
+            if contador <= cantidad:
+                logging.warning(m)
+                logging.warning("cantidad")
+                nuevo_quant_id = self.env["stock.quant"].with_context(inventory_mode=True).sudo().create({
+                    'location_id': 357,
+                    'product_id': m.product_id.id,
+                    'lot_id': m.lot_id.id,
+                    'inventory_quantity': 0,
+                }).action_apply_inventory()
+                #logging.warning(m.inventory_quantity_auto_apply)
+                m.write({"available_quantity": 0})
+                logging.warning(contador)
+                contador += 1
+        return True
+        
     def _search_picking_for_assignation(self):
         res = super(StockMove, self)._search_picking_for_assignation()
         res = False

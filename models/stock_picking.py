@@ -101,7 +101,10 @@ class Picking(models.Model):
                         else:
                             raise ValidationError("Error al crear lote")
     
-
+        if self.picking_type_id.bloqueo_traspaso == True:
+            if self.note == "<p><br></p>":
+              raise ValidationError("Favor de llenar las notas :@") 
+              
         if self.picking_type_id.salida_traspaso==True:
             if len(self.partner_id) == 0:
                 raise ValidationError("La dirección de entrega es requerida")
@@ -494,3 +497,4 @@ class StockPickingType(models.Model):
     tipo_transporte = fields.Selection([('00', 'Sin uso de Carreteras Federales'), ('01', 'Autotransporte Federal')], string='Tipo de transporte')
     salida_traspaso = fields.Boolean("Salida por traspaso")
     generar_nuevos_lotes = fields.Boolean("Generar nuevos lotes")
+    bloqueo_traspaso = fields.Boolean("Bloqueo traspasos")

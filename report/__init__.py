@@ -17,3 +17,4 @@ from . import reporte_corte_caja_carta
 from . import reporte_corte_caja_ticket
 from . import reporte_productos_prelabor_venta
 from . import reporte_codigo_barras_lotet
+from . import pos_order_report_quemen

@@ -24,8 +24,6 @@ class ReportExplosionInsumos(models.AbstractModel):
         products_pt = {}
         products_cp = {}
         products_mp = {}
-        logging.warning('explode')
-        logging.warning(o.product_ids[0].product_id.bom_ids[0].explode(o.product_ids[0].product_id, 200))
         if o.product_ids:
             for pt_line in o.product_ids:
                 if pt_line.product_id.id not in products_pt:

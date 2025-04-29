@@ -82,7 +82,7 @@ class PosOrderReportQuemen(models.Model):
         """
     def _where(self):
         return """
-        WHERE DATE(s.date_order) = CURRENT_DATE
+        WHERE date_trunc('month', s.date_order) = date_trunc('month', CURRENT_DATE) AND date_trunc('day', s.date_order) = date_trunc('day', CURRENT_DATE) AND date_trunc('year', s.date_order) = date_trunc('year', CURRENT_DATE)
         """
     
     def _group_by(self):

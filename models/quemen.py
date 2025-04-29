@@ -316,7 +316,7 @@ class QuemenPlanning(models.Model):
                     group_product_components.append((0,0,{'product_id': product_id.id,'qty': lc['qty'] }) )
                     # lc['line'].unlink()
                     for component in product_id.bom_ids.bom_line_ids:
-                        qty_production = (product_id.bom_ids.product_qty*component.product_qty) * lc['qty']
+                        qty_production = component.product_qty * lc['qty']
                         qty_stock = component.product_id.qty_available
                         qty = qty_production - qty_stock
 

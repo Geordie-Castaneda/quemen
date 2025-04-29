@@ -324,7 +324,7 @@ class QuemenPlanning(models.Model):
                             'subproduct_id': component.product_id.id,
                             'qty_production': qty_production,
                             'qty_stock': qty_stock,
-                            'qty': qty,
+                            'qty': 0 if qty < 0 else qty,
                             'area': component.product_id.bom_ids.area,
                         }))
                 logging.warning(group_product_components)

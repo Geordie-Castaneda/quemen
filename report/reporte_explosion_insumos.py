@@ -26,9 +26,10 @@ class ReportExplosionInsumos(models.AbstractModel):
         products_mp = {}
         if o.product_ids:
             for pt_line in o.product_ids:
-                if pt_line.product_id.id not in products_pt:
-                     products_pt[pt_line.product_id.id] = {'name': pt_line.product_id.name, 'quantity': 0.00000, 'uom': pt_line.product_id.uom_id.name}
-                products_pt[pt_line.product_id.id]['quantity'] += pt_line.quantity
+                if pt_line.product_id.name[0:4] == "COMP":
+                    if pt_line.product_id.id not in products_pt:
+                         products_pt[pt_line.product_id.id] = {'name': pt_line.product_id.name, 'quantity': 0.00000, 'uom': pt_line.product_id.uom_id.name}
+                    products_pt[pt_line.product_id.id]['quantity'] += pt_line.quantity
 
                 if pt_line.product_id.bom_ids:
                     if pt_line.product_id.name == "PT - GELATINA YOGURT DE DURAZNO GDE":

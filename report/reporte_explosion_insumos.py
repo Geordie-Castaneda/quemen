@@ -26,14 +26,11 @@ class ReportExplosionInsumos(models.AbstractModel):
         products_mp = {}
         if o.product_ids:
             for pt_line in o.product_ids:
-                if pt_line.product_id.name[0:4] == "COMP":
-                    if pt_line.product_id.id not in products_pt:
-                         products_pt[pt_line.product_id.id] = {'name': pt_line.product_id.name, 'quantity': 0.00000, 'uom': pt_line.product_id.uom_id.name}
-                    products_pt[pt_line.product_id.id]['quantity'] += pt_line.quantity
+                if pt_line.product_id.id not in products_pt:
+                     products_pt[pt_line.product_id.id] = {'name': pt_line.product_id.name, 'quantity': 0.00000, 'uom': pt_line.product_id.uom_id.name}
+                products_pt[pt_line.product_id.id]['quantity'] += pt_line.quantity
 
                 if pt_line.product_id.bom_ids:
-                    if pt_line.product_id.name == "PT - GELATINA YOGURT DE DURAZNO GDE":
-                        logging.warning('producto: PT - GELATINA YOGURT DE DURAZNO GDE------------------')
                     for bom_line in pt_line.product_id.bom_ids[0].bom_line_ids:
                         if bom_line.stage not in info:
                             info[bom_line.stage] = {'component': {}, 'mp': {}}
@@ -55,8 +52,9 @@ class ReportExplosionInsumos(models.AbstractModel):
                         else:
                             if bom_line.product_id.id not in info['mp']:
                                 info['mp'][bom_line.product_id.id] = {'product': bom_line.product_id, 'quantity': 0.00000, 'quantity_exp':  0.00000}
+                            cantidad_planeada = sum(line.quantity for line in o.product_ids if bom_line.product_id.id == line.product_id.id)
                             info['mp'][bom_line.product_id.id]['quantity'] += (bom_line.product_qty * pt_line.quantity)
-                            info['mp'][bom_line.product_id.id]['quantity_exp'] += (bom_line.product_qty * pt_line.quantity)
+                            info['mp'][bom_line.product_id.id]['quantity_exp'] += (bom_line.product_qty * pt_line.quantity) + cantidad_planeada
 
 
 

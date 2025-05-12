@@ -19,6 +19,7 @@ class Picking(models.Model):
     
     generar_nuevos_lotes = fields.Boolean("Generar nuevos lotes", related="picking_type_id.generar_nuevos_lotes")
     producto_ids = fields.One2many("quemen.stock_move_line", "picking_id", "Productos")
+    dia_congelamiento = fields.Boolean("Día congelamiento")
 
     def write(self, vals):
         for picking in self:
@@ -66,7 +67,7 @@ class Picking(models.Model):
 
                     if existencia > 0:
 
-                        elaboration_date = datetime.fromisoformat(fields.Date.today().isoformat() + ' 06:00:00')
+                        elaboration_date = datetime.fromisoformat(fields.Date.today().isoformat() + ' 06:00:00') + (relativedelta(days=1) if self.dia_congelamiento else relativedelta(days=0))
                         expiration_date = elaboration_date + timedelta(days=linea.product_id.expiration_time)
                         removal_date = expiration_date
                         use_date = expiration_date

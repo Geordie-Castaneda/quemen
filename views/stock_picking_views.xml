@@ -9,6 +9,9 @@
                 <field name="is_locked" position="after">
                     <field name="generar_nuevos_lotes" invisible="1"/>
                 </field>
+                <field name="origin" position="after">
+                    <field name="dia_congelamiento"/>
+                </field>
                 <page name="detailed_operations" position="before">
                     <page string="Productos" name="productos" attrs="{'invisible': [('generar_nuevos_lotes', '=', False)]}">
                         <field name="producto_ids" mode="tree">

@@ -115,9 +115,6 @@ class QuemenRetirosEfectivo(models.Model):
 
     @api.model_create_multi
     def create(self, vals_list):
-        logging.warning('valores')
-        logging.warning(vals_list)
-        logging.warning(self)
         for vals in vals_list:
             secuencia_id = self.env['pos.session'].search([('id', '=', vals['sesion_id'])]).config_id.secuencia_id
             if vals.get('name', _('New')) == _('New'):
@@ -214,21 +211,18 @@ class QuemenOpLote(models.Model):
                                                                           'use_date': use_date,
                                                                           'alert_date': alert_date,
                                                                           'company_id': 1})
-                        logging.warning('lote')
-                        logging.warning(lot_id)
+
                         if lot_id:
                             line.write({'lot_barcode_id': lot_id})
 
 
     def confirm_lot(self):
         for lot in self:
-            logging.warning('LOTE')
-            logging.warning(lot)
+
             if lot.product_ids:
                 for line in lot.product_ids:
                     if line.lot_barcode_id == False:
                         raise ValidationError(_('No puede validar productos sin Lote.'))
-                    logging.warning(line.product_id.name)
                     date_planed_start = datetime.fromisoformat(lot.date_mrp_production.isoformat() + ' 06:00:00')
                     mrp_order = {
                         # 'name': line.lot_id.name,
@@ -306,7 +300,7 @@ class QuemenPlanning(models.Model):
                     }
                     line.unlink()
                     list_components.append(origin_lines_dic)
-            
+
         if len(list_components) > 0:
             for lc in list_components:
                 group_product_components = []
@@ -316,7 +310,7 @@ class QuemenPlanning(models.Model):
                     group_product_components.append((0,0,{'product_id': product_id.id,'qty': lc['qty'] }) )
                     # lc['line'].unlink()
                     for component in product_id.bom_ids.bom_line_ids:
-                        qty_production = component.product_qty * lc['qty']
+                        qty_production = (product_id.bom_ids.product_qty*component.product_qty) * lc['qty']
                         qty_stock = component.product_id.qty_available
                         qty = qty_production - qty_stock
 
@@ -324,10 +318,68 @@ class QuemenPlanning(models.Model):
                             'subproduct_id': component.product_id.id,
                             'qty_production': qty_production,
                             'qty_stock': qty_stock,
-                            'qty': 0 if qty < 0 else qty,
+                            'qty': qty,
                             'area': component.product_id.bom_ids.area,
                         }))
-                logging.warning(group_product_components)
+
+                        #Receta 2 de (sub 2)
+                        if component.product_id.bom_ids and component.product_id.bom_ids.bom_line_ids:
+                            for component1 in component.product_id.bom_ids.bom_line_ids:
+                                qty1_production = qty_production * component1.product_qty
+                                qty1_stock = component1.product_id.qty_available
+                                qty1 = qty1_production - qty1_stock
+                                group_product_components.append((0,0,{
+                                    'subproduct1_id': component1.product_id.id,
+                                    'qty_production': qty1_production,
+                                    'qty_stock': qty1_stock,
+                                    'qty': qty1,
+                                    'area': component.product_id.bom_ids.area,
+                                }))
+                                
+                                #Receta 3 de (sub 3)
+                                if component1.product_id.bom_ids and component1.product_id.bom_ids.bom_line_ids:
+                                    for component2 in component1.product_id.bom_ids.bom_line_ids:
+                                        qty2_production = qty1_production * component2.product_qty
+                                        qty2_stock = component2.product_id.qty_available
+                                        qty2 = qty2_production - qty2_stock
+                                    
+                                        group_product_components.append((0,0,{
+                                            'subproduct2_id': component2.product_id.id,
+                                            'qty_production': qty2_production,
+                                            'qty_stock': qty2_stock,
+                                            'qty': qty2,
+                                            'area': component.product_id.bom_ids.area,
+                                        }))
+                                        
+                                        #Receta 4 de (sub 4)
+                                        if component2.product_id.bom_ids and component2.product_id.bom_ids.bom_line_ids:
+                                            for component3 in component2.product_id.bom_ids.bom_line_ids:
+                                                qty3_production = qty2_production * component3.product_qty
+                                                qty3_stock = component3.product_id.qty_available
+                                                qty3 = qty3_production - qty3_stock
+                                            
+                                                group_product_components.append((0,0,{
+                                                    'subproduct3_id': component3.product_id.id,
+                                                    'qty_production': qty3_production,
+                                                    'qty_stock': qty3_stock,
+                                                    'qty': qty3,
+                                                    'area': component.product_id.bom_ids.area,
+                                                }))
+                                                #Receta 5 de (sub 5)
+                                                if component3.product_id.bom_ids and component3.product_id.bom_ids.bom_line_ids:
+                                                    for component4 in component3.product_id.bom_ids.bom_line_ids:
+                                                        qty4_production = qty4_production * component4.product_qty
+                                                        qty4_stock = component3.product_id.qty_available
+                                                        qty4 = qty4_production - qty4_stock
+                                                    
+                                                        group_product_components.append((0,0,{
+                                                            'subproduct4_id': component4.product_id.id,
+                                                            'qty_production': qty4_production,
+                                                            'qty_stock': qty4_stock,
+                                                            'qty': qty4,
+                                                            'area': component.product_id.bom_ids.area,
+                                                        }))
+                        
                 self.write({'product_ids': group_product_components})
         return True
     
@@ -348,7 +400,6 @@ class QuemenPlanning(models.Model):
 
                 if len(dic_components) > 0:
                     for component in dic_components:
-                        logging.warning(component)
                         op_lot_id = self.env['quemen.op_lote'].create({
                             'date': p.date, 
                             'date_mrp_production': p.planning_date,
@@ -364,6 +415,10 @@ class QuemenPlanningLine(models.Model):
     planning_id = fields.Many2one("quemen.planning", "Planeacion")
     product_id = fields.Many2one('product.product','Producto',tracking=True)
     subproduct_id = fields.Many2one('product.product','Componente',tracking=True)
+    subproduct1_id = fields.Many2one('product.product','Componente1',tracking=True)
+    subproduct2_id = fields.Many2one('product.product','Componente2',tracking=True)
+    subproduct3_id = fields.Many2one('product.product','Componente3',tracking=True)
+    subproduct4_id = fields.Many2one('product.product','Componente4',tracking=True)
     qty_production = fields.Float('Producción',tracking=True)
     qty_stock = fields.Float('Existencia',tracking=True)
     qty = fields.Float('Cantidad',tracking=True)

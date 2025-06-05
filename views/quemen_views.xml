@@ -263,17 +263,21 @@
                                     <field name="reference" attrs="{'readonly': [('state','=','confirmado')]}"/>
                                 </group>
 
-                                  <field name="product_ids">
-                                      <tree string="Productos" editable="bottom">
-                                          <field name="line_state" invisible="1"/>
-                                          <field name="product_id" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
-                                          <field name="subproduct_id" attrs="{'readonly': [('line_state','=','confirmado')]}"/>                                          
-                                          <field name="qty_production" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
-                                          <field name="qty_stock" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
-                                          <field name="qty" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
-                                          <field name="area"/>
-                                      </tree>
-                                  </field>
+                                <field name="product_ids">
+                                    <tree string="Productos" editable="bottom">
+                                        <field name="line_state" invisible="1"/>
+                                        <field name="product_id" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="subproduct_id" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="subproduct1_id" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="subproduct2_id" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="subproduct3_id" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="subproduct4_id" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="qty_production" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="qty_stock" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="qty" attrs="{'readonly': [('line_state','=','confirmado')]}"/>
+                                        <field name="area"/>
+                                    </tree>
+                                </field>
 
                             </group>
 

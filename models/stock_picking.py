@@ -6,6 +6,7 @@ import pytz
 from datetime import datetime, timedelta
 from lxml import etree
 import re
+from dateutil.relativedelta import relativedelta
 
 class Picking(models.Model):
     _inherit = "stock.picking"

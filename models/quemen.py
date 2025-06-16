@@ -368,7 +368,7 @@ class QuemenPlanning(models.Model):
                                                 #Receta 5 de (sub 5)
                                                 if component3.product_id.bom_ids and component3.product_id.bom_ids.bom_line_ids:
                                                     for component4 in component3.product_id.bom_ids.bom_line_ids:
-                                                        qty4_production = qty4_production * component4.product_qty
+                                                        qty4_production = qty3_production * component4.product_qty
                                                         qty4_stock = component3.product_id.qty_available
                                                         qty4 = 0 if qty3_stock > 0 else qty4_production - qty4_stock
                                                     

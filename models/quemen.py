@@ -312,7 +312,7 @@ class QuemenPlanning(models.Model):
                     for component in product_id.bom_ids.bom_line_ids:
                         qty_production = (product_id.bom_ids.product_qty*component.product_qty) * lc['qty']
                         qty_stock = component.product_id.qty_available
-                        qty = qty_production - qty_stock
+                        qty = 0 if qty_stock > 0 else qty_production - qty_stock
 
                         group_product_components.append((0,0,{
                             'subproduct_id': component.product_id.id,
@@ -327,7 +327,7 @@ class QuemenPlanning(models.Model):
                             for component1 in component.product_id.bom_ids.bom_line_ids:
                                 qty1_production = qty_production * component1.product_qty
                                 qty1_stock = component1.product_id.qty_available
-                                qty1 = qty1_production - qty1_stock
+                                qty1 = 0 if qty1_stock else qty1_production - qty1_stock
                                 group_product_components.append((0,0,{
                                     'subproduct1_id': component1.product_id.id,
                                     'qty_production': qty1_production,
@@ -341,7 +341,7 @@ class QuemenPlanning(models.Model):
                                     for component2 in component1.product_id.bom_ids.bom_line_ids:
                                         qty2_production = qty1_production * component2.product_qty
                                         qty2_stock = component2.product_id.qty_available
-                                        qty2 = qty2_production - qty2_stock
+                                        qty2 = 0 if qty2_stock > 0 else qty2_production - qty2_stock
                                     
                                         group_product_components.append((0,0,{
                                             'subproduct2_id': component2.product_id.id,
@@ -356,7 +356,7 @@ class QuemenPlanning(models.Model):
                                             for component3 in component2.product_id.bom_ids.bom_line_ids:
                                                 qty3_production = qty2_production * component3.product_qty
                                                 qty3_stock = component3.product_id.qty_available
-                                                qty3 = qty3_production - qty3_stock
+                                                qty3 = 0 if qty3_stock > 0 else qty3_production - qty3_stock
                                             
                                                 group_product_components.append((0,0,{
                                                     'subproduct3_id': component3.product_id.id,
@@ -370,7 +370,7 @@ class QuemenPlanning(models.Model):
                                                     for component4 in component3.product_id.bom_ids.bom_line_ids:
                                                         qty4_production = qty4_production * component4.product_qty
                                                         qty4_stock = component3.product_id.qty_available
-                                                        qty4 = qty4_production - qty4_stock
+                                                        qty4 = 0 if qty4_stock > 0 else qty4_production - qty4_stock
                                                     
                                                         group_product_components.append((0,0,{
                                                             'subproduct4_id': component4.product_id.id,

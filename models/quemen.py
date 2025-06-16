@@ -318,7 +318,7 @@ class QuemenPlanning(models.Model):
                             'subproduct_id': component.product_id.id,
                             'qty_production': qty_production,
                             'qty_stock': qty_stock,
-                            'qty': qty,
+                            #'qty': qty,
                             'area': component.product_id.bom_ids.area,
                         }))
 
@@ -332,7 +332,7 @@ class QuemenPlanning(models.Model):
                                     'subproduct1_id': component1.product_id.id,
                                     'qty_production': qty1_production,
                                     'qty_stock': qty1_stock,
-                                    'qty': qty1,
+                                    #'qty': qty1,
                                     'area': component.product_id.bom_ids.area,
                                 }))
                                 
@@ -347,7 +347,7 @@ class QuemenPlanning(models.Model):
                                             'subproduct2_id': component2.product_id.id,
                                             'qty_production': qty2_production,
                                             'qty_stock': qty2_stock,
-                                            'qty': qty2,
+                                            #'qty': qty2,
                                             'area': component.product_id.bom_ids.area,
                                         }))
                                         
@@ -362,7 +362,7 @@ class QuemenPlanning(models.Model):
                                                     'subproduct3_id': component3.product_id.id,
                                                     'qty_production': qty3_production,
                                                     'qty_stock': qty3_stock,
-                                                    'qty': qty3,
+                                                    #'qty': qty3,
                                                     'area': component.product_id.bom_ids.area,
                                                 }))
                                                 #Receta 5 de (sub 5)
@@ -376,7 +376,7 @@ class QuemenPlanning(models.Model):
                                                             'subproduct4_id': component4.product_id.id,
                                                             'qty_production': qty4_production,
                                                             'qty_stock': qty4_stock,
-                                                            'qty': qty4,
+                                                            #'qty': qty4,
                                                             'area': component.product_id.bom_ids.area,
                                                         }))
                         

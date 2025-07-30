@@ -64,6 +64,18 @@ models.Orderline = models.Orderline.extend({
             _super_posmodel.initialize.apply(this,attributes);
 
             console.log('INICIALIZAR POS MODEL')
+
+            self.rpc({
+                model: 'stock.production.lot',
+                method: 'get_available_lots_for_pos',
+                args: [],
+            }).then(function(result) {
+                self.lot_dict = result || {};
+                console.log('✅ Lotes cargados:', self.lot_dict);
+            }).catch(function(err) {
+                console.error('❌ Error cargando lotes:', err);
+            });
+		
             var self = this;
             self.regimenes_fiscales = [{
                 'id': 601,

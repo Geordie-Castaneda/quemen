@@ -291,76 +291,55 @@ odoo.define('quemen.ProductScreen', function(require) {
             }
 
             async _getProductByBarcode(code) {
-                var product_barcode = super._getProductByBarcode(...arguments);
-
-                let NewfoundProductIds = [];
-                let FoundProduct = [];
-                code.type = 'lot';
-
-                try {
-                    NewfoundProductIds = await this.rpc({
-                        model: 'stock.production.lot',
-                        method: 'search_read',
-                        args: [[
-                            ['name', '=', code.base_code]
-                        ]],
-                        context: this.env.session.user_context,
-                    });
-                    FoundProduct = [NewfoundProductIds[0].product_id[0]]
-
-                } catch (error) {
-                    if (isConnectionError(error)) {
-                        return this.showPopup('OfflineErrorPopup', {
-                            title: this.env._t('Network Error'),
-                            body: this.env._t("Product is not loaded. Tried loading the product from the server but there is a network error."),
-                        });
-                    } else {
-                        throw error;
-                    }
-                }
-
-                if (FoundProduct.length) {
-                    var ProductLot = [NewfoundProductIds[0].product_id[0]];
-                    var IdLot = NewfoundProductIds[0].id;
-                    var ProductStock = [];
-                    var location_id = this.env.pos.config.ubicacion_id[0];
-                    ProductStock = await this.rpc({
+                const lotes = this.env.pos.lot_dict || {};
+                console.log("_getProductByBarcode ");
+                console.log("code", code);
+            
+                const lote_data = lotes[code.base_code];  // buscar por nombre del lote
+            
+                if (lote_data) {
+                    console.log("✅ Lote encontrado en cache:", lote_data);
+            
+                    const lot_id = lote_data.id;
+                    const product_id = lote_data.product_id;
+            
+                    const ProductStock = await this.rpc({
                         model: 'stock.quant',
                         method: 'search_read',
                         args: [[
-                            ['lot_id', '=', IdLot],
-                            ['location_id', '=', location_id]
+                            ['lot_id', '=', lot_id],
+                            ['location_id', '=', this.env.pos.config.ubicacion_id[0]]
                         ]],
                         context: this.env.session.user_context,
                     });
-
-                    if (ProductStock.length == 1){
-
-                        if (ProductStock[0].available_quantity > 0){
-                            await this.env.pos._addProducts(FoundProduct, false);
-                            // assume that the result is unique.
-                            product_barcode = this.env.pos.db.get_product_by_id(FoundProduct[0]);
+            
+                    if (ProductStock.length === 1) {
+                        if (ProductStock[0].available_quantity > 0) {
+                            await this.env.pos._addProducts([product_id], false);
+                            const product_barcode = this.env.pos.db.get_product_by_id(product_id);
                             return product_barcode;
-                        }else{
-                             await Gui.showPopup('ErrorPopup', {
-                                'title': _t("POS error"),
-                                'body': _t("No hay existencias de producto."),
+                        } else {
+                            await Gui.showPopup('ErrorPopup', {
+                                title: _t("POS error"),
+                                body: _t("No hay existencias de producto."),
                             });
                             return false;
                         }
-
-                    }else{
-                            await Gui.showPopup('ErrorPopup', {
-                                'title': _t("POS error"),
-                                'body': _t("Lote inválido."),
-                            });
-                            return false;
-
+                    } else {
+                        await Gui.showPopup('ErrorPopup', {
+                            title: _t("POS error"),
+                            body: _t("Lote inválido."),
+                        });
+                        return false;
                     }
-
-
+                } else {
+                    await Gui.showPopup('ErrorPopup', {
+                        title: _t("POS error"),
+                        body: _t("❌ Lote no encontrado en la lista. ",code.base_code),
+                    });
+                    console.warn("❌ Lote no encontrado en cache: ", code.base_code);
+                    return false;
                 }
-
             }
 
         };

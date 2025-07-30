@@ -64,7 +64,7 @@ models.Orderline = models.Orderline.extend({
             _super_posmodel.initialize.apply(this,attributes);
 
             console.log('INICIALIZAR POS MODEL')
-
+	    var self = this;
             self.rpc({
                 model: 'stock.production.lot',
                 method: 'get_available_lots_for_pos',
@@ -75,8 +75,7 @@ models.Orderline = models.Orderline.extend({
             }).catch(function(err) {
                 console.error('❌ Error cargando lotes:', err);
             });
-		
-            var self = this;
+
             self.regimenes_fiscales = [{
                 'id': 601,
                 'name': 'General de Ley Personas Morales',

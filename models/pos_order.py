@@ -70,9 +70,9 @@ class PosOrder(models.Model):
                     variable = False
                     if line.payment_method_id.name == "Efectivo":
                         variable = '01'
-                    elif line.payment_method_id.name == "Tarjeta credito":
+                    elif line.payment_method_id.name in ["Tarjeta credito","Tarjeta credito Netpay"]:
                         variable = '04'
-                    elif line.payment_method_id.name == "Tarjeta debito":
+                    elif line.payment_method_id.name in ["Tarjeta debito","Tarjeta debito Netpay"]:
                         variable = '28'
                     else:
                         variable = '01'

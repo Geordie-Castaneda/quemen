@@ -155,6 +155,7 @@ class Picking(models.Model):
                     location_dest_id = linea.location_dest_id.id
                     lot_id = linea.lot_id.name
                     expiration_date = linea.lot_id.expiration_date
+                    removal_date = linea.lot_id.expiration_date
                     cantidad_entera = linea.qty_done
                     cantidad_porcion = linea.product_id.porciones
                     qty_done = cantidad_entera * cantidad_porcion

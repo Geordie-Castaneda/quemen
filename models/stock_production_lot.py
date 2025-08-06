@@ -27,6 +27,7 @@ class ProductionLot(models.Model):
                 ('location_id.usage', '=', 'internal'),
                 ('quantity', '>', 0),
                 ('lot_id', '!=', False),
+                ('x_studio_categoria_de_producto', '!=', "Rebanadas"),
             ],
             fields=['lot_id'],
             groupby=['lot_id']

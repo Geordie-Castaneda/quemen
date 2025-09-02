@@ -296,10 +296,19 @@ class ReporteCorteCajaTicket(models.AbstractModel):
         for fg in facturas_globales:
             total_factura_global = fg.amount_total
             for lineas in fg.invoice_line_ids:
-                if lineas.tax_ids.id != False:
-                    producto_iva += lineas.price_subtotal
+                if len(lineas.tax_ids) > 0:
+                    for impuesto in lineas.tax_ids:
+                        if 'IEPS' in impuesto.name:
+                            producto_iva += lineas.price_subtotal
+                        else:
+                            producto_iva += lineas.price_subtotal
                 else:
                     producto_sin_iva += lineas.price_subtotal
+                #Codigo antes IEPS
+                # if lineas.tax_ids.id != False:
+                #     producto_iva += lineas.price_subtotal
+                # else:
+                #     producto_sin_iva += lineas.price_subtotal
             iva_factura_global = round(fg.amount_total - fg.amount_untaxed, 2)
 
         listado_facturas_globales.append({

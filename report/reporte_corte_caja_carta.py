@@ -103,6 +103,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 ventas_iva = 0.00
                 descuento_iva = 0.00
                 ieps8 = 0.00
+                descuento_ieps8 = 0.00
                 descuento = 0.00
                 iva = 0.00
                 total = 0.00
@@ -114,9 +115,29 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                     domain = ast.literal_eval(domain)
                     producto_ids = self.env['product.product'].search(domain)
                     if len(producto_ids[0].taxes_id) > 1:
-                        descuento_sin_impuesto = True
-                        descuento_sin_iva = linea.price_subtotal_incl * -1
-                        descuento += descuento_sin_iva
+
+                        if linea.tax_ids_after_fiscal_position:
+                            descuento_sin_impuesto = True
+                            currency = venta.session_id.currency_id
+                            if linea.tax_ids_after_fiscal_position:
+                                line_taxes = linea.tax_ids_after_fiscal_position.sudo().compute_all(linea.price_unit * (1-(linea.discount or 0.0)/100.0), currency, linea.qty, product=linea.product_id, partner=linea.order_id.partner_id or False)
+                                for tax in line_taxes['taxes']:
+                                    if tax['name'] == 'IVA(0%) VENTAS':
+                                        descuento_sin_iva = tax['base'] * -1
+                                        descuento += descuento_sin_iva
+                                    elif tax['name'] == 'IVA(16%) VENTAS':
+                                        descuento_sin_iva = tax['base'] * -1
+                                        descuento += descuento_sin_iva
+                                    elif tax['name'] == 'IEPS(8%) VENTAS':
+                                        descuento_ieps8 = tax['amount'] * -1
+                                        descuento += descuento_ieps8
+                                    else:
+                                        descuento_sin_iva = linea.price_subtotal_incl * -1
+                                        descuento += descuento_sin_iva
+                        else:
+                            descuento_sin_impuesto = True
+                            descuento_sin_iva = linea.price_subtotal_incl * -1
+                            descuento += descuento_sin_iva
                     else:
                         if producto_ids[0].taxes_id.name == 'IVA(0%) VENTAS':
                             descuento_sin_impuesto = True
@@ -169,7 +190,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 ventas_sesion[venta_nombre]['ventas_iva'] += ventas_iva
                 ventas_sesion[venta_nombre]['descuento_iva'] += descuento_iva
                 ventas_sesion[venta_nombre]['ieps8'] += ieps8
-                ventas_sesion[venta_nombre]['descuento_ieps8'] += 0
+                ventas_sesion[venta_nombre]['descuento_ieps8'] += descuento_ieps8
                 ventas_sesion[venta_nombre]['descuento'] += descuento
                 ventas_sesion[venta_nombre]['iva'] += iva
                 ventas_sesion[venta_nombre]['total'] += total
@@ -183,7 +204,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 totales_ventas_sesion['ventas_iva'] += ventas_iva
                 totales_ventas_sesion['descuento_iva'] += descuento_iva
                 totales_ventas_sesion['ieps8'] += ieps8
-                totales_ventas_sesion['descuento_ieps8'] += 0
+                totales_ventas_sesion['descuento_ieps8'] += descuento_ieps8
                 totales_ventas_sesion['descuento'] += descuento
                 totales_ventas_sesion['iva'] += iva
                 totales_ventas_sesion['total'] += total

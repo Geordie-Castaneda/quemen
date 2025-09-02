@@ -61,7 +61,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
         ventas_mostrador = {'folios': False, 'importe': 0.00, 'descuento': 0.00, 'total': 0}
         total_ventas_mostrador = 0.00
         ventas_sesion = {}
-        totales_ventas_sesion = {'ventas_sin_iva': 0, 'descuento_sin_iva': 0, 'ventas_iva': 0, 'descuento_iva': 0, 'descuento': 0, 'iva': 0, 'total': 0}
+        totales_ventas_sesion = {'ventas_sin_iva': 0, 'descuento_sin_iva': 0, 'ventas_iva': 0, 'descuento_iva': 0, 'ieps8':0, 'descuento_ieps8': 0, 'descuento': 0, 'iva': 0, 'total': 0}
         resumen_facturas_expedidas = {'serie': '', 'folios': '', 'venta_sin_iva': 0.00, 'venta_iva': 0.00, 'iva': 0.00, 'total': 0.00}
         resumen_factura_global = {'serie': '', 'folios': '', 'venta_sin_iva': 0.00, 'venta_iva': 0.00, 'iva': 0.00, 'total': 0.00}
         total_facturas_expedidas = 0.00
@@ -95,13 +95,14 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                     fp = 'M'
                 # serie = venta_nombre.split("/", 1)[0]
                 # folio = venta_nombre.split("/", 1)[1]
-                ventas_sesion[venta_nombre] = {'venta': venta_nombre,'ventas_sin_iva': 0, 'descuento_sin_iva': 0, 'ventas_iva': 0, 'descuento_iva': 0, 'descuento': 0, 'iva': 0, 'total': 0, 'fp': fp, 'e':0}
+                ventas_sesion[venta_nombre] = {'venta': venta_nombre,'ventas_sin_iva': 0, 'descuento_sin_iva': 0, 'ventas_iva': 0, 'descuento_iva': 0, 'ieps8': 0, 'descuento_ieps8':0 ,'descuento': 0, 'iva': 0, 'total': 0, 'fp': fp, 'e':0}
 
             for linea in venta.lines:
                 ventas_sin_iva = 0.00
                 descuento_sin_iva = 0.00
                 ventas_iva = 0.00
                 descuento_iva = 0.00
+                ieps8 = 0.00
                 descuento = 0.00
                 iva = 0.00
                 total = 0.00
@@ -125,14 +126,38 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                             descuento_iva = linea.price_subtotal_incl * -1
                             descuento += descuento_iva
                 else:
+                    #Ventas sin impuesto
                     if linea.price_subtotal == linea.price_subtotal_incl:
                         ventas_sin_iva = linea.price_subtotal_incl
                         total = ventas_sin_iva - descuento_sin_iva
                         # ventas_sesion[venta_nombre]['ventas_sin_iva'] = ventas_sin_iva
-
+                    #ventas con impuesto
                     else:
-                        ventas_iva = linea.price_subtotal
-                        iva = linea.price_subtotal_incl - ventas_iva
+
+                        logging.warning("Ventas con impuesto")
+                        logging.warning(venta.name)
+                        currency = venta.session_id.currency_id
+                        if linea.tax_ids_after_fiscal_position:
+                            line_taxes = linea.tax_ids_after_fiscal_position.sudo().compute_all(linea.price_unit * (1-(linea.discount or 0.0)/100.0), currency, linea.qty, product=linea.product_id, partner=linea.order_id.partner_id or False)
+                            for tax in line_taxes['taxes']:
+                                logging.warning('----taxes----')
+                                logging.warning(tax)
+                                if tax['name'] == 'IVA(0%) VENTAS':
+                                    ventas_sin_iva = tax['base']
+                                elif tax['name'] == 'IVA(16%) VENTAS':
+                                    ventas_iva = tax['base']
+                                    iva = tax['amount']
+                                elif tax['name'] == 'IEPS(8%) VENTAS':
+                                    ieps8 = tax['amount']
+                                else:
+                                    ventas_sin_iva = 0
+                                    
+                                # taxes.setdefault(tax['id'], {'name': tax['name'], 'tax_amount':0.0, 'base_amount':0.0})
+                                # taxes[tax['id']]['tax_amount'] += tax['amount']
+                                # taxes[tax['id']]['base_amount'] += tax['base']
+                        
+                        #ventas_iva = linea.price_subtotal
+                        #iva = linea.price_subtotal_incl - ventas_iva
                         total = linea.price_subtotal_incl + descuento_iva
                         # ventas_sesion[venta_nombre]['ventas_iva'] = linea.price_subtotal_incl
                         # ventas_sesion[venta_nombre]['iva'] = iva
@@ -143,6 +168,8 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 ventas_sesion[venta_nombre]['descuento_sin_iva'] += descuento_sin_iva
                 ventas_sesion[venta_nombre]['ventas_iva'] += ventas_iva
                 ventas_sesion[venta_nombre]['descuento_iva'] += descuento_iva
+                ventas_sesion[venta_nombre]['ieps8'] += ieps8
+                ventas_sesion[venta_nombre]['descuento_ieps8'] += 0
                 ventas_sesion[venta_nombre]['descuento'] += descuento
                 ventas_sesion[venta_nombre]['iva'] += iva
                 ventas_sesion[venta_nombre]['total'] += total
@@ -155,6 +182,8 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 totales_ventas_sesion['descuento_sin_iva'] += descuento_sin_iva
                 totales_ventas_sesion['ventas_iva'] += ventas_iva
                 totales_ventas_sesion['descuento_iva'] += descuento_iva
+                totales_ventas_sesion['ieps8'] += ieps8
+                totales_ventas_sesion['descuento_ieps8'] += 0
                 totales_ventas_sesion['descuento'] += descuento
                 totales_ventas_sesion['iva'] += iva
                 totales_ventas_sesion['total'] += total
@@ -395,16 +424,33 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 precio_unitario = lineas.price_unit
                 descuento_lineas = lineas.discount
                 porcentaje = descuento_lineas/100
-
-                if linea_iva.id != False:
-                    calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
-                    suma_descuento_iva += calculo_precio_cantidad_iva
-                    precio_original_iva += cantidad * precio_unitario
-
-                if linea_iva.id == False:
+                if len(linea_iva) > 0:
+                    for impuesto in linea_iva:
+                        if 'IEPS' in impuesto.name:
+                            calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
+                            suma_descuento_iva += calculo_precio_cantidad_iva
+                            precio_original_iva += cantidad * precio_unitario
+                        else: 
+                            calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
+                            suma_descuento_iva += calculo_precio_cantidad_iva
+                            precio_original_iva += cantidad * precio_unitario
+                else:
                     calculo_precio_cantidad = (cantidad * precio_unitario)*porcentaje
                     suma_descuento_sin_iva += calculo_precio_cantidad
                     calculo_precio_sin_iva += cantidad * precio_unitario
+
+                #Codigo anterior a IEPS
+                #---------------------------------------------------------------------------
+                # if linea_iva.id != False:
+                #     calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
+                #     suma_descuento_iva += calculo_precio_cantidad_iva
+                #     precio_original_iva += cantidad * precio_unitario
+
+                # if linea_iva.id == False:
+                #     calculo_precio_cantidad = (cantidad * precio_unitario)*porcentaje
+                #     suma_descuento_sin_iva += calculo_precio_cantidad
+                #     calculo_precio_sin_iva += cantidad * precio_unitario
+                #---------------------------------------------------------------------------
 
             total_suma_descuento_iva = suma_descuento_iva
             total_suma_descuento = suma_descuento_sin_iva
@@ -564,11 +610,26 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             producto_sin_iva1 = 0
             # folio_expedido = fex.ref
             # serie_expedido = fex.ref
+
             for lineas in fex.invoice_line_ids:
-                if lineas.tax_ids.id != False:
-                    producto_iva1 += lineas.price_subtotal
+                if len(lineas.tax_ids) > 0:
+                    for impuesto in lineas.tax_ids:
+                        if 'IEPS' in impuesto.name:
+                            producto_iva1 += lineas.price_subtotal
+                        else:
+                            producto_iva1 += lineas.price_subtotal
                 else:
                     producto_sin_iva1 += lineas.price_subtotal
+            
+            #Codigo antes de IEPS
+            #--------------------------------------------
+            # for lineas in fex.invoice_line_ids:
+            #     if lineas.tax_ids.id != False:
+            #         producto_iva1 += lineas.price_subtotal
+            #     else:
+            #         producto_sin_iva1 += lineas.price_subtotal
+            #--------------------------------------------
+            
             suma_ventas_sin_iva += producto_sin_iva1
             suma_ventas_iva += producto_iva1
             iva_factura_expedida = round(fex.amount_total - fex.amount_untaxed, 2)

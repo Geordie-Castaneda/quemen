@@ -83,16 +83,35 @@ class ReporteCorteCajaTicket(models.AbstractModel):
                 precio_unitario = lineas.price_unit
                 descuento_lineas = lineas.discount
                 porcentaje = descuento_lineas/100
-
-                if linea_iva.id != False:
-                    calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
-                    suma_descuento_iva += calculo_precio_cantidad_iva
-                    precio_original_iva += cantidad * precio_unitario
-
-                if linea_iva.id == False:
+                logging.warning('linea_iva')
+                logging.warning(linea_iva)
+                if len(linea_iva) > 0:
+                    for impuesto in linea_iva:
+                        if 'IEPS' in impuesto.name:
+                            calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
+                            suma_descuento_iva += calculo_precio_cantidad_iva
+                            precio_original_iva += cantidad * precio_unitario
+                        else: 
+                            calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
+                            suma_descuento_iva += calculo_precio_cantidad_iva
+                            precio_original_iva += cantidad * precio_unitario
+                else:
                     calculo_precio_cantidad = (cantidad * precio_unitario)*porcentaje
                     suma_descuento_sin_iva += calculo_precio_cantidad
                     calculo_precio_sin_iva += cantidad * precio_unitario
+                    
+                #Codigo anterior a IEPS
+                #---------------------------------------------------------------------------
+                # if linea_iva.id != False:
+                #     calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
+                #     suma_descuento_iva += calculo_precio_cantidad_iva
+                #     precio_original_iva += cantidad * precio_unitario
+
+                # if linea_iva.id == False:
+                #     calculo_precio_cantidad = (cantidad * precio_unitario)*porcentaje
+                #     suma_descuento_sin_iva += calculo_precio_cantidad
+                #     calculo_precio_sin_iva += cantidad * precio_unitario
+                #---------------------------------------------------------------------------
 
             total_suma_descuento_iva = suma_descuento_iva
             total_suma_descuento = suma_descuento_sin_iva
@@ -234,10 +253,22 @@ class ReporteCorteCajaTicket(models.AbstractModel):
             folio_expedido = fex.invoice_origin.split("/", 1)[1]
             serie_expedido = fex.invoice_origin.split("/", 1)[0]
             for lineas in fex.invoice_line_ids:
-                if lineas.tax_ids.id != False:
-                    producto_iva1 += lineas.price_subtotal
+                if len(lineas.tax_ids) > 0:
+                    for impuesto in lineas.tax_ids:
+                        if 'IEPS' in impuesto.name:
+                            producto_iva1 += lineas.price_subtotal
+                        else:
+                            producto_iva1 += lineas.price_subtotal
                 else:
                     producto_sin_iva1 += lineas.price_subtotal
+
+                #Codigo antes de IEPS
+                #--------------------------------------------
+                # if lineas.tax_ids.id != False:
+                #     producto_iva1 += lineas.price_subtotal
+                # else:
+                #     producto_sin_iva1 += lineas.price_subtotal
+                #--------------------------------------------
             suma_ventas_sin_iva += producto_sin_iva1
             suma_ventas_iva += producto_iva1
             iva_factura_expedida = round(fex.amount_total - fex.amount_untaxed, 2)

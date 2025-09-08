@@ -10,3 +10,4 @@ class ProductTemplateExtraFields(models.Model):
 
     producto_porciones = fields.Many2one('product.template', string="Producto porciones")
     porciones = fields.Integer('Porciones')
+    dias_caducidad_rebanado = fields.Integer('Dias caducidad rebanado')

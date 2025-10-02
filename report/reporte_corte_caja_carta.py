@@ -21,7 +21,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
         for sesion in docs:
             if len(sesion.order_ids) > 0:
                 for pedido in sesion.order_ids:
-                    if pedido.state in ['done', 'paid'] and pedido.amount_total > 0 and (pedido.is_refunded==False):
+                    if pedido.state in ['done', 'paid','invoiced'] and pedido.amount_total > 0 and (pedido.is_refunded==False):
                         pedidos_facturar.append(pedido)
                         ids_pedidos.append(pedido.id)
                         for linea in pedido.payment_ids:

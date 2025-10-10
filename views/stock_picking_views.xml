@@ -20,9 +20,9 @@
                                 <field name="lote_id" domain="[('product_id','=',product_id)]"/>
                                 <field name="cantidad"/>
                             </tree>
-                        </field>    
-                    </page>   
-                </page>    
+                        </field>
+                    </page>
+                </page>
             </field>
         </record>
 
@@ -41,6 +41,7 @@
                         <field name="salida_traspaso"/>
                         <field name="generar_nuevos_lotes"/>
                         <field name="bloqueo_traspaso"/>
+                        <field name="generar_nuevos_lotes_tiendas"/>
                     </group>
                 </field>
             </field>

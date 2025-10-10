@@ -17,10 +17,11 @@ class Picking(models.Model):
     #     comodel_name='l10n_mx_edi.customs.regime',
     #     ondelete='restrict',
     # )
-    
+
     generar_nuevos_lotes = fields.Boolean("Generar nuevos lotes", related="picking_type_id.generar_nuevos_lotes")
     producto_ids = fields.One2many("quemen.stock_move_line", "picking_id", "Productos")
     dia_congelamiento = fields.Boolean("Día congelamiento")
+    generar_nuevos_lotes_tiendas = fields.Boolean("Generar nuevos lotes", related="picking_type_id.generar_nuevos_lotes_tiendas")
 
     def write(self, vals):
         for picking in self:
@@ -46,7 +47,7 @@ class Picking(models.Model):
         for picking in self:
             new_datetime = picking.scheduled_date
             picking.scheduled_date = new_datetime + timedelta(hours=2)
-    
+
     def button_validate(self):
         if self.generar_nuevos_lotes == True:
             if len(self.producto_ids) == 0:
@@ -102,11 +103,11 @@ class Picking(models.Model):
                             })
                         else:
                             raise ValidationError("Error al crear lote")
-    
+
         if self.picking_type_id.bloqueo_traspaso == True:
             if self.note == "<p><br></p>":
-              raise ValidationError("Favor de llenar las notas :@") 
-              
+              raise ValidationError("Favor de llenar las notas :@")
+
         if self.picking_type_id.salida_traspaso==True:
             if len(self.partner_id) == 0:
                 raise ValidationError("La dirección de entrega es requerida")
@@ -155,7 +156,9 @@ class Picking(models.Model):
                     location_dest_id = linea.location_dest_id.id
                     lot_id = linea.lot_id.name
                     expiration_date = linea.lot_id.expiration_date
-                    removal_date = linea.lot_id.expiration_date
+                    if self.generar_nuevos_lotes_tiendas:
+                        expiration_date = datetime.fromisoformat(fields.Date.today().isoformat() + ' 06:00:00') + relativedelta(days= linea.product_id.dias_caducidad_rebanado)
+                    removal_date = expiration_date
                     cantidad_entera = linea.qty_done
                     cantidad_porcion = linea.product_id.porciones
                     qty_done = cantidad_entera * cantidad_porcion
@@ -501,3 +504,4 @@ class StockPickingType(models.Model):
     salida_traspaso = fields.Boolean("Salida por traspaso")
     generar_nuevos_lotes = fields.Boolean("Generar nuevos lotes")
     bloqueo_traspaso = fields.Boolean("Bloqueo traspasos")
+    generar_nuevos_lotes_tiendas = fields.Boolean("Generar nuevos lotes tiendas")

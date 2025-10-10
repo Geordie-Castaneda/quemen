@@ -173,6 +173,7 @@ class Picking(models.Model):
                     'location_dest_id': location_dest_id,
                     'lot_id': lot_id,
                     'expiration_date': expiration_date,
+                    'removal_date': removal_date,
                     'qty_done': qty_done
                     }
         if  len(lista_id)>0:
@@ -191,6 +192,7 @@ class Picking(models.Model):
                 if len(lotes)>0:
                     # logging.warn(">0")
                     lote2_id = lotes
+                    lote2_id.removal_date = lote2_id.expiration_date
                     # logging.warn(lote2_id)
                 else:
                     # logging.warn("else")
@@ -198,6 +200,7 @@ class Picking(models.Model):
                     'name': lista_id[lneas]['lot_id'],
                     'company_id': self.env.company.id,
                     'expiration_date': lista_id[lneas]['expiration_date'],
+                    'removal_date':  lista_id[lneas]['removal_date'],
                     'product_id': lista_id[lneas]['product_id']})
                     # logging.warn(lote2_id)
 

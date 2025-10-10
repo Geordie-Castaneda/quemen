@@ -133,7 +133,6 @@ class Picking(models.Model):
         tipo_de_operacion = self.env.user.pos_id.producto_porciones.id
         lineas = self.move_line_ids_without_package
         tipo_de_operacion = self.picking_type_id.tipo_operacion_porcion_id
-        logging.warning('entra funcion')
         ubicacion_id = self.picking_type_id.tipo_operacion_porcion_id.default_location_src_id
         ubicacion_dest_id = self.picking_type_id.tipo_operacion_porcion_id.default_location_dest_id
         for linea in lineas:

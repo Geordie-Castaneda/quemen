@@ -96,7 +96,7 @@
                 <td ></td>
                 <td colspan="2" style="font-size:100%" align="right">Total de caja</td>
                 <!-- <th t-foreach="listado_totales" t-as="ti" style="text-align:right; font-size:100%"><span t-esc="total_ventas_mostrador" t-options = '{"widget": "float", "precision": 2}'/></th> -->
-                 <td style="text-align:right; font-size:100%">1</td>
+                 <td style="text-align:right; font-size:100%"><span t-esc="ventas_mostrador['total']" t-options = '{"widget": "float", "precision": 2}'/></td>
               </tr>
 
             </tbody>
@@ -168,7 +168,7 @@
               <td style="font-size:100%" align="right"><span t-esc="ventas_sesion[p]['ieps8']" t-options = '{"widget": "float", "precision": 2}'/></td>
 
               <td style="font-size:100%" align="right"><span t-esc="ventas_sesion[p]['descuento_ieps8']" t-options = '{"widget": "float", "precision": 2}'/></td>
-                
+
               <td style="font-size:100%" align="right"><span t-esc="ventas_sesion[p]['descuento']" t-options = '{"widget": "float", "precision": 2}'/></td>
               <td style="font-size:100%" align="right"><span t-esc="ventas_sesion[p]['iva']" t-options = '{"widget": "float", "precision": 2}'/></td>
               <td style="font-size:100%" align="right"><span t-esc="ventas_sesion[p]['total']" t-options = '{"widget": "float", "precision": 2}'/></td>
@@ -190,7 +190,7 @@
 
               <th style="font-size:100%; text-align:right"><span t-esc="totales_ventas_sesion['ieps8']" t-options = '{"widget": "float", "precision": 2}'/></th>
               <th style="font-size:100%; text-align:right"><span t-esc="totales_ventas_sesion['descuento_ieps8']" t-options = '{"widget": "float", "precision": 2}'/></th>
-                
+
               <th style="font-size:100%; text-align:right"><span t-esc="totales_ventas_sesion['descuento']" t-options = '{"widget": "float", "precision": 2}'/></th>
               <th style="font-size:100%; text-align:right"><span t-esc="totales_ventas_sesion['iva']" t-options = '{"widget": "float", "precision": 2}'/></th>
               <th style="font-size:100%; text-align:right"><span t-esc="totales_ventas_sesion['total']" t-options = '{"widget": "float", "precision": 2}'/></th>

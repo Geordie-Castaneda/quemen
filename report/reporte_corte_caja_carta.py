@@ -55,7 +55,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                         else:
                             producto_ids = linea.program_id.discount_line_product_id
 
-                        
+
                         if producto_ids[0].taxes_id[0].name == "IVA(16%) VENTAS":
                             impuesto_programa_16 =  "IVA(16%) VENTAS"
                             total_descuento_16 += (linea.price_subtotal_incl*-1)
@@ -70,7 +70,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                         if len(producto_ids[0].taxes_id) > 1:
                             if producto_ids[0].taxes_id[1].name == "IEPS(8%) VENTAS":
                                 impuesto_programa_ieps8 = True
- 
+
                 for linea in pedido.lines:
                     llave = str(linea.order_id.name)+str(linea.tax_ids_after_fiscal_position[0].name)
                     if linea.price_subtotal_incl > 0:
@@ -143,9 +143,9 @@ class ReporteCorteCajaCarta(models.AbstractModel):
 
                 del lineas_facturar_dic[ticket]['linea_0']
                 del lineas_facturar_dic[ticket]['linea_16']
-            
+
         return lineas_facturar_dic
-    
+
     def sesiones(self, docs):
         listado_productos = []
         listado_totales = []
@@ -214,7 +214,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
         #SOLO OBTENEMOS INFORMACION DE PEDIDOS FACTURADOS
                     # ventas_sesion[venta_nombre] = {'venta': venta_nombre,'ventas_sin_iva': 0, 'descuento_sin_iva': 0, 'ventas_iva': 0, 'descuento_iva': 0, 'ieps8': 0, 'descuento_ieps8':0 ,'descuento': 0, 'iva': 0, 'total': 0, 'fp': fp, 'e':0}
         lineas_facturar_dic = self.datos_factura(docs)
-        
+
         ventas_sesion = {}
         totales_ventas_sesion = {
             'ventas_sin_iva': 0, 'descuento_sin_iva': 0,
@@ -223,10 +223,10 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             'descuento': 0, 'iva': 0, 'total': 0
         }
         currency = docs.currency_id or self.env.company.currency_id
-        
+
         for llave, linea in lineas_facturar_dic.items():
             ticket_ref = linea['name']   # referencia al pedido/ticket
-        
+
             # --- normalizar tax_ids ---
             tax_ids = []
             if linea['tax_ids']:
@@ -237,14 +237,14 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                         tax_ids = linea['tax_ids']        # lista simple de ints
                 else:
                     tax_ids = [linea['tax_ids']]          # int único
-        
+
             taxes = self.env['account.tax'].browse(tax_ids) if tax_ids else False
-        
+
             # --- precio unitario con descuento aplicado ---
             discount = linea.get('discount', 0.0) or 0.0
             price_unit_desc = linea['price_unit'] * (1 - (linea.get('discount', 0.0) or 0.0) / 100.0)
 
-        
+
             # --- compute_all con precio con descuento ---
             taxes_res = taxes.compute_all(
                 price_unit_desc,
@@ -253,19 +253,19 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 product=self.env['product.product'].browse(linea['product_id']),
                 partner=False,
             ) if taxes else {'total_excluded': 0, 'total_included': 0, 'taxes': []}
-        
+
             ventas_sin_iva = sum(t['base'] for t in taxes_res['taxes'] if '0%' in t['name'])
             ventas_iva = sum(t['base'] for t in taxes_res['taxes'] if '16%' in t['name'])
             ieps8 = sum(t['amount'] for t in taxes_res['taxes'] if 'IEPS' in t['name'])
             iva = sum(t['amount'] for t in taxes_res['taxes'] if 'IVA' in t['name'])
             total = taxes_res['total_included']
-        
+
             # --- crear la estructura del ticket si no existe ---
 
-                
+
             # --- calcular descuentos manuales ---
             descuento_total = (linea['price_unit'] * linea['quantity']) - (price_unit_desc * linea['quantity'])
-            
+
             # Inicializamos columnas
             ventas_sin_iva = 0.0
             ventas_iva = 0.0
@@ -277,7 +277,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             subtotal_neto = taxes_res['total_excluded']
             total = taxes_res['total_included']
             # Detectar si hay IEPS en la línea
-            tiene_ieps = any('IEPS' in t['name'] for t in taxes_res['taxes'])            
+            tiene_ieps = any('IEPS' in t['name'] for t in taxes_res['taxes'])
 
             # --- normalizar tax_ids de la línea (diccionario proveniente de datos_factura) ---
             tax_ids = []
@@ -292,15 +292,15 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 else:
                     # id único
                     tax_ids = [linea['tax_ids']]
-            
+
             taxes = self.env['account.tax'].browse(tax_ids) if tax_ids else False
-            
+
             # --- precio con descuento aplicado ---
             discount = linea.get('discount', 0.0) or 0.0
             price_unit = linea['price_unit']
             qty = linea['quantity']
             price_unit_desc = price_unit * (1 - discount / 100.0)
-            
+
             product = self.env['product.product'].browse(linea['product_id'])
 
             def _compute(price_unit_):
@@ -317,12 +317,12 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                     product=product,
                     partner=False,
                 )
-            
+
             # --- calcular ANTES y DESPUÉS del descuento ---
             res_before = _compute(price_unit)        # antes de descuento
             res_after  = _compute(price_unit_desc)   # después de descuento
 
-            
+
             # --- extraer componentes por impuesto ---
             def _split(res):
                 base0 = sum(t['base']   for t in res['taxes'] if '0%'   in t['name'])
@@ -330,11 +330,11 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 iva   = sum(t['amount'] for t in res['taxes'] if 'IVA'  in t['name'])
                 ieps  = sum(t['amount'] for t in res['taxes'] if 'IEPS' in t['name'])
                 return base0, base16, iva, ieps, res['total_excluded'], res['total_included']
-            
+
             b0_before, b16_before, iva_before, ieps_before, _, tot_inc_before = _split(res_before)
             b0_after,  b16_after,  iva_after,  ieps_after,  _, tot_inc_after  = _split(res_after)
 
-            
+
             # --- VENTAS (valores netos después del descuento) ---
             ventas_sin_iva = b0_after
             ventas_iva     = b16_after
@@ -342,17 +342,17 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             iva            = iva_after
             total          = tot_inc_after
 
-            
+
             # --- Descuentos manuales (según Excel) ---
             descuento_base0  = b0_before - b0_after
             descuento_base16 = b16_before - b16_after
-            
+
             descuento_sin_iva = 0.0
             descuento_iva     = 0.0
             descuento_ieps8   = 0.0
-            
+
             tiene_ieps = ieps_before > 0 or ieps_after > 0
-            
+
             if ticket_ref not in ventas_sesion:
                 ventas_sesion[ticket_ref] = {
                     'venta': ticket_ref,
@@ -368,31 +368,31 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             if descuento_base0 > 0 and tiene_ieps:
                 descuento_sin_iva = descuento_base0
                 descuento_ieps8   = descuento_base0 * 0.08
-            
+
             # Caso: 16% + IEPS
             elif descuento_base16 > 0 and tiene_ieps:
                 descuento_sin_iva = 0.0
                 descuento_base = descuento_base16
                 descuento_ieps8 = descuento_base * 0.08
                 descuento_iva   = (descuento_base + descuento_ieps8) * 0.16
-            
+
             # Caso: solo 16%
             elif descuento_base16 > 0 and not tiene_ieps:
                 descuento_iva = descuento_base16 * 0.16
-            
+
             # Caso: solo 0%
             elif descuento_base0 > 0 and not tiene_ieps:
                 descuento_sin_iva = descuento_base0
-            
+
             # Total descuento
             descuento_total = descuento_sin_iva + descuento_iva + descuento_ieps8
-            
+
             # Guardar descuentos en el diccionario del ticket
             ventas_sesion[ticket_ref]['descuento_sin_iva'] += descuento_sin_iva
             ventas_sesion[ticket_ref]['descuento_iva'] += descuento_iva
             ventas_sesion[ticket_ref]['descuento_ieps8'] += descuento_ieps8
             ventas_sesion[ticket_ref]['descuento'] += (descuento_sin_iva + descuento_iva + descuento_ieps8)
-            
+
             # --- acumular en el ticket ---
             ventas_sesion[ticket_ref]['ventas_sin_iva'] += ventas_sin_iva
             ventas_sesion[ticket_ref]['ventas_iva'] += ventas_iva
@@ -405,7 +405,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             totales_ventas_sesion['descuento_iva'] += descuento_iva
             totales_ventas_sesion['descuento_ieps8'] += descuento_ieps8
             totales_ventas_sesion['descuento'] += (descuento_sin_iva + descuento_iva + descuento_ieps8)
-            
+
             # --- acumular en los totales generales ---
             totales_ventas_sesion['ventas_sin_iva'] += ventas_sin_iva
             totales_ventas_sesion['ventas_iva'] += ventas_iva
@@ -436,6 +436,11 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             iva_venta = referencia.amount_tax
             total = referencia.amount_total
             suma_iva = round(iva_venta, 2)
+            
+            for linea_pago in referencia.payment_ids:
+                if linea_pago.payment_method_id.name == 'Efectivo':
+                    venta_efectivo += linea_pago.amount
+
             for lineas in referencia.lines:
                 linea_iva = lineas.tax_ids_after_fiscal_position
                 cantidad = lineas.qty
@@ -448,7 +453,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                             calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
                             suma_descuento_iva += calculo_precio_cantidad_iva
                             precio_original_iva += cantidad * precio_unitario
-                        else: 
+                        else:
                             calculo_precio_cantidad_iva = (cantidad * precio_unitario) * porcentaje
                             suma_descuento_iva += calculo_precio_cantidad_iva
                             precio_original_iva += cantidad * precio_unitario
@@ -609,7 +614,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                             producto_iva1 += lineas.price_subtotal
                 else:
                     producto_sin_iva1 += lineas.price_subtotal
-            
+
             #Codigo antes de IEPS
             #--------------------------------------------
             # for lineas in fex.invoice_line_ids:
@@ -618,7 +623,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             #     else:
             #         producto_sin_iva1 += lineas.price_subtotal
             #--------------------------------------------
-            
+
             suma_ventas_sin_iva += producto_sin_iva1
             suma_ventas_iva += producto_iva1
             iva_factura_expedida = round(fex.amount_total - fex.amount_untaxed, 2)
@@ -661,7 +666,7 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 # else:
                 #     producto_sin_iva += lineas.price_subtotal
 
-                
+
             iva_factura_global = round(fg.amount_total - fg.amount_untaxed, 2)
 
         listado_facturas_globales.append({
@@ -722,12 +727,14 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                 'total_retiros': total_retiros,
                 'total_cancelado': total_cancelado
             })
-        
+
         total_ventas_mostrador = totales_ventas_sesion['total']
         total_facturas_expedidas = resumen_facturas_expedidas['total'] + resumen_factura_global['total']
 
         diferencia = apertura_efectivo + total_retiro_efectivo - venta_efectivo - cierre_efectivo
-
+        ventas_mostrador['importe'] = totales_ventas_sesion['total'] - totales_ventas_sesion['descuento']
+        ventas_mostrador['descuento'] = totales_ventas_sesion['descuento']
+        ventas_mostrador['total'] = totales_ventas_sesion['total']
         return {
         'listado_productos': listado_productos,
         'listado_totales': listado_totales,

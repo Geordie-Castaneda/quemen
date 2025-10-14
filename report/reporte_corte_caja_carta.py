@@ -55,7 +55,9 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                         else:
                             producto_ids = linea.program_id.discount_line_product_id
 
-
+                        logging.warning("****************************")
+                        logging.warning(producto_ids[0].name)
+                        logging.warning(producto_ids[0].taxes_id)
                         if producto_ids[0].taxes_id[0].name == "IVA(16%) VENTAS":
                             impuesto_programa_16 =  "IVA(16%) VENTAS"
                             total_descuento_16 += (linea.price_subtotal_incl*-1)
@@ -75,10 +77,18 @@ class ReporteCorteCajaCarta(models.AbstractModel):
                     llave = str(linea.order_id.name)+str(linea.tax_ids_after_fiscal_position[0].name)
                     if linea.price_subtotal_incl > 0:
                         if llave not in lineas_facturar_dic:
-                            linea_0 = True if linea.tax_ids_after_fiscal_position[0].name == "IVA(0%) VENTAS" else False
-                            linea_16 = True if linea.tax_ids_after_fiscal_position[0].name == "IVA(16%) VENTAS" else False
-                            tax_ids = [1,12] if linea_0 and impuesto_programa_ieps8 else False
-
+                            linea_0 = linea.tax_ids_after_fiscal_position.filtered(lambda t: t.name == "IVA(0%) VENTAS")
+                            linea_16 = linea.tax_ids_after_fiscal_position.filtered(lambda t: t.name == "IVA(16%) VENTAS")
+                            
+                            # Si la promoción tiene IEPS y este producto aplica IEPS, añadirlo.
+                            if impuesto_programa_ieps8 and any('IEPS' in t.name for t in linea.product_id.taxes_id):
+                                tax_ids = [(6, 0, linea.product_id.taxes_id.ids)]
+                            else:
+                                # Usar los impuestos reales de la línea
+                                tax_ids = [(6, 0, linea.tax_ids_after_fiscal_position.ids)]
+                            # linea_0 = True if linea.tax_ids_after_fiscal_position[0].name == "IVA(0%) VENTAS" else False
+                            # linea_16 = True if linea.tax_ids_after_fiscal_position[0].name == "IVA(16%) VENTAS" else False
+                            # tax_ids = [1,12] if linea_0 and impuesto_programa_ieps8 else False
                             linea_factura = {
                                 'product_id': producto_linea_factura.id,
                                 'quantity': 1,
@@ -143,7 +153,8 @@ class ReporteCorteCajaCarta(models.AbstractModel):
 
                 del lineas_facturar_dic[ticket]['linea_0']
                 del lineas_facturar_dic[ticket]['linea_16']
-
+        logging.warning("lineas_facturar_dic")
+        logging.warning(lineas_facturar_dic)
         return lineas_facturar_dic
 
     def sesiones(self, docs):
@@ -229,6 +240,8 @@ class ReporteCorteCajaCarta(models.AbstractModel):
 
             # --- normalizar tax_ids ---
             tax_ids = []
+            logging.warning('Linea taxids')
+            logging.warning(linea['tax_ids'])
             if linea['tax_ids']:
                 if isinstance(linea['tax_ids'], (list, tuple)):
                     if isinstance(linea['tax_ids'][0], (list, tuple)):
@@ -302,7 +315,9 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             price_unit_desc = price_unit * (1 - discount / 100.0)
 
             product = self.env['product.product'].browse(linea['product_id'])
-
+            logging.warning("producto")
+            logging.warning(product)
+            logging.warning(product.name)
             def _compute(price_unit_):
                 if not taxes:
                     return {
@@ -320,7 +335,9 @@ class ReporteCorteCajaCarta(models.AbstractModel):
 
             # --- calcular ANTES y DESPUÉS del descuento ---
             res_before = _compute(price_unit)        # antes de descuento
+            logging.warning('res_before: ' + str(res_before) )
             res_after  = _compute(price_unit_desc)   # después de descuento
+            logging.warning('res_after: ' + str(res_after) )
 
 
             # --- extraer componentes por impuesto ---
@@ -351,8 +368,11 @@ class ReporteCorteCajaCarta(models.AbstractModel):
             descuento_iva     = 0.0
             descuento_ieps8   = 0.0
 
-            tiene_ieps = ieps_before > 0 or ieps_after > 0
-
+            tiene_ieps = any('IEPS' in t['name'] for t in res_before['taxes'])
+            logging.warning("tiene IEPS")
+            logging.warning(ticket_ref)
+            logging.warning(res_before)
+            logging.warning(tiene_ieps)
             if ticket_ref not in ventas_sesion:
                 ventas_sesion[ticket_ref] = {
                     'venta': ticket_ref,

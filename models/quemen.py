@@ -5,6 +5,7 @@ from datetime import datetime, timedelta
 from odoo.exceptions import UserError, ValidationError
 import logging
 import pytz
+from odoo.tools import float_compare
 
 class QuemenStockMoveLine(models.Model):
     _name = "quemen.stock_move_line"

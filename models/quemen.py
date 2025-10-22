@@ -243,6 +243,22 @@ class QuemenOpLote(models.Model):
 
                     mrp_order_id._onchange_move_raw()
                     mrp_order_id._onchange_move_finished()
+
+                    if mrp_order_id.product_tracking == 'serial' and float_compare(mrp_order_id.qty_producing, 1, precision_rounding=mrp_order_id.product_uom_id.rounding) == 1:
+                        mrp_order_id.qty_producing = 1
+                    else:
+                        mrp_order_id.qty_producing = mrp_order_id.product_qty - mrp_order_id.qty_produced
+                    mrp_order_id._set_qty_producing()
+                    for move in mrp_order_id.move_raw_ids.filtered(lambda m: m.state not in ['done', 'cancel']):
+                        rounding = move.product_uom.rounding
+                        for move_line in move.move_line_ids:
+                            if move_line.product_uom_qty:
+                                move_line.qty_done = min(move_line.product_uom_qty, move_line.move_id.should_consume_qty)
+                            if float_compare(move.quantity_done, move.should_consume_qty, precision_rounding=rounding) >= 0:
+                                break
+                        if float_compare(move.product_uom_qty, move.quantity_done, precision_rounding=move.product_uom.rounding) == 1:
+                            if move.has_tracking in ('serial', 'lot'):
+                                error_msg += "\n  - %s" % move.product_id.display_name
             lot.write({'state': "confirmado"})
         return True
 
@@ -287,7 +303,7 @@ class QuemenPlanning(models.Model):
 
         result = super(QuemenPlanning, self).create(vals)
         return result
-        
+
     def show_components(self):
         list_components = []
         for p in self:
@@ -305,7 +321,7 @@ class QuemenPlanning(models.Model):
             for lc in list_components:
                 group_product_components = []
                 product_id = lc['product_id']
-                
+
                 if product_id.bom_ids and product_id.bom_ids.bom_line_ids:
                     group_product_components.append((0,0,{'product_id': product_id.id,'qty': lc['qty'] }) )
                     # lc['line'].unlink()
@@ -335,14 +351,14 @@ class QuemenPlanning(models.Model):
                                     #'qty': qty1,
                                     'area': component.product_id.bom_ids.area,
                                 }))
-                                
+
                                 #Receta 3 de (sub 3)
                                 if component1.product_id.bom_ids and component1.product_id.bom_ids.bom_line_ids:
                                     for component2 in component1.product_id.bom_ids.bom_line_ids:
                                         qty2_production = qty1_production * component2.product_qty
                                         qty2_stock = component2.product_id.qty_available
                                         qty2 = 0 if qty1_stock > 0 else qty2_production - qty2_stock
-                                    
+
                                         group_product_components.append((0,0,{
                                             'subproduct2_id': component2.product_id.id,
                                             'qty_production': qty2_production,
@@ -350,14 +366,14 @@ class QuemenPlanning(models.Model):
                                             #'qty': qty2,
                                             'area': component.product_id.bom_ids.area,
                                         }))
-                                        
+
                                         #Receta 4 de (sub 4)
                                         if component2.product_id.bom_ids and component2.product_id.bom_ids.bom_line_ids:
                                             for component3 in component2.product_id.bom_ids.bom_line_ids:
                                                 qty3_production = qty2_production * component3.product_qty
                                                 qty3_stock = component3.product_id.qty_available
                                                 qty3 = 0 if qty2_stock > 0 else qty3_production - qty3_stock
-                                            
+
                                                 group_product_components.append((0,0,{
                                                     'subproduct3_id': component3.product_id.id,
                                                     'qty_production': qty3_production,
@@ -371,7 +387,7 @@ class QuemenPlanning(models.Model):
                                                         qty4_production = qty3_production * component4.product_qty
                                                         qty4_stock = component3.product_id.qty_available
                                                         qty4 = 0 if qty3_stock > 0 else qty4_production - qty4_stock
-                                                    
+
                                                         group_product_components.append((0,0,{
                                                             'subproduct4_id': component4.product_id.id,
                                                             'qty_production': qty4_production,
@@ -379,10 +395,10 @@ class QuemenPlanning(models.Model):
                                                             #'qty': qty4,
                                                             'area': component.product_id.bom_ids.area,
                                                         }))
-                        
+
                 self.write({'product_ids': group_product_components})
         return True
-    
+
     def confirm_planning(self):
         for p in self:
             if p.product_ids:
@@ -392,7 +408,7 @@ class QuemenPlanning(models.Model):
                     if line.subproduct_id:
                         if line.area not in dic_components:
                             dic_components[line.area] = []
-                        
+
                         dic_components[line.area].append((0,0, {
                             'product_id': line.subproduct_id.id,
                             'quantity': line.qty,
@@ -401,7 +417,7 @@ class QuemenPlanning(models.Model):
                 if len(dic_components) > 0:
                     for component in dic_components:
                         op_lot_id = self.env['quemen.op_lote'].create({
-                            'date': p.date, 
+                            'date': p.date,
                             'date_mrp_production': p.planning_date,
                             'reference': p.name,
                             'product_ids': dic_components[component]})
@@ -427,7 +443,7 @@ class QuemenPlanningLine(models.Model):
         [('borrador', 'Borrador'), ('confirmado', 'Confirmado')],
         'Estado', readonly=True, copy=False, related='planning_id.state')
     area = fields.Char("Area")
-    
+
     # @api.onchange('product_id')
     # def _onchange_product_id(self):
     #     if self.product_id and self.product_id.bom_ids:

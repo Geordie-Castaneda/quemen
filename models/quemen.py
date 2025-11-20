@@ -219,7 +219,7 @@ class QuemenOpLote(models.Model):
 
     def confirm_lot(self):
         for lot in self:
-
+            error_msg = ''
             if lot.product_ids:
                 for line in lot.product_ids:
                     if line.lot_barcode_id == False:

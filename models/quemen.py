@@ -225,12 +225,15 @@ class QuemenOpLote(models.Model):
                     if line.lot_barcode_id == False:
                         raise ValidationError(_('No puede validar productos sin Lote.'))
                     date_planed_start = datetime.fromisoformat(lot.date_mrp_production.isoformat() + ' 06:00:00')
+                    qyt_bom = 1
+                    if line.product_id.bom_ids:
+                        qty_bom = line.product_id.bom_ids[0].product_qty
                     mrp_order = {
                         # 'name': line.lot_id.name,
                         'product_id': line.product_id.id,
                         'product_uom_id': line.product_id.uom_id.id,
-                        'qty_producing': line.quantity,
-                        'product_qty': line.quantity,
+                        'qty_producing': line.quantity * qty_bom,
+                        'product_qty': line.quantity * qty_bom,
                         'bom_id': line.product_id.bom_ids.id,
                         'origin': line.lot_id.name,
                         'lot_producing_id': line.lot_barcode_id.id,

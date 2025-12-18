@@ -74,6 +74,8 @@ class PosOrder(models.Model):
                         variable = '04'
                     elif line.payment_method_id.name in ["Tarjeta debito","Tarjeta debito Netpay"]:
                         variable = '28'
+                    elif line.payment_method_id.name == 'Transferencia':
+                        variable = '03'
                     else:
                         variable = '01'
                     l10n_mx_edi_payment_method_id = self.env['l10n_mx_edi.payment.method'].search([('code','=',variable)])
